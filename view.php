@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>View Page</title>
+    <title>Page</title>
 </head>
 <body>
     <h1>Welcome</h1>
