@@ -14,46 +14,94 @@
                 </div>
             @endif
 
-            <!-- 1. Basic Information & Links -->
+            <!-- 1. Student Profile -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-slate-200 transition duration-300 hover:shadow-md">
                 <div class="p-8">
                     <h3 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
                         <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                        Basic Information
+                        Student Profile
                     </h3>
+
+                    <!-- Account and password management moved to the Account page -->
                     
                     <form method="POST" action="{{ route('student.profile.update') }}" class="space-y-6">
                         @csrf
                         @method('PUT')
 
-                        <div>
-                            <x-input-label for="phone_number" :value="__('Phone Number')" />
-                            <x-text-input id="phone_number" name="phone_number" type="text" class="mt-1 block w-full focus:ring-indigo-500 focus:border-indigo-500" :value="old('phone_number', $user->profile->phone_number ?? '')" />
-                            <x-input-error class="mt-2" :messages="$errors->get('phone_number')" />
-                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <x-input-label for="full_name" :value="__('Full Name')" />
+                                <input id="full_name" type="text" class="mt-1 block w-full" style="width: 100%; min-height: 2.5rem; padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; background-color: #f8fafc;" value="{{ $user->profile->full_name ?? $user->name }}" readonly />
+                            </div>
+                            <div>
+                                <x-input-label for="tp_number" :value="__('TP Number')" />
+                                <input id="tp_number" type="text" class="mt-1 block w-full" style="width: 100%; min-height: 2.5rem; padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; background-color: #f8fafc;" value="{{ $user->profile->tp_number ?? '' }}" readonly />
+                            </div>
 
-                        <div>
-                            <x-input-label for="bio" :value="__('Professional Bio')" />
-                            <textarea id="bio" name="bio" rows="4" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm transition duration-150 ease-in-out">{{ old('bio', $user->profile->bio ?? '') }}</textarea>
-                            <x-input-error class="mt-2" :messages="$errors->get('bio')" />
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <x-input-label for="languages_summary" :value="__('Languages')" />
+                                    <textarea id="languages_summary" name="languages_summary" rows="3" class="mt-1 block w-full" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem;" placeholder="English - Fluent\nMalay - Native">{{ old('languages_summary', $user->profile->languages_summary ?? '') }}</textarea>
+                                    <x-input-error class="mt-2" :messages="$errors->get('languages_summary')" />
+                                </div>
+                                <div>
+                                    <x-input-label for="references_summary" :value="__('References')" />
+                                    <textarea id="references_summary" name="references_summary" rows="3" class="mt-1 block w-full" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem;" placeholder="Available upon request or list referee names and contacts">{{ old('references_summary', $user->profile->references_summary ?? '') }}</textarea>
+                                    <x-input-error class="mt-2" :messages="$errors->get('references_summary')" />
+                                </div>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
-                                <x-input-label for="linkedin_url" :value="__('LinkedIn URL')" />
-                                <x-text-input id="linkedin_url" name="linkedin_url" type="url" class="mt-1 block w-full" :value="old('linkedin_url', $user->profile->linkedin_url ?? '')" placeholder="https://linkedin.com/in/..." />
-                                <x-input-error class="mt-2" :messages="$errors->get('linkedin_url')" />
+                                <x-input-label for="course_name" :value="__('Course Name')" />
+                                <input id="course_name" type="text" class="mt-1 block w-full" style="width: 100%; min-height: 2.5rem; padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; background-color: #f8fafc;" value="{{ $user->profile->course_name ?? '' }}" readonly />
                             </div>
                             <div>
-                                <x-input-label for="github_url" :value="__('GitHub URL')" />
-                                <x-text-input id="github_url" name="github_url" type="url" class="mt-1 block w-full" :value="old('github_url', $user->profile->github_url ?? '')" placeholder="https://github.com/..." />
-                                <x-input-error class="mt-2" :messages="$errors->get('github_url')" />
+                                <x-input-label for="specialization" :value="__('Specialization')" />
+                                <input id="specialization" type="text" class="mt-1 block w-full" style="width: 100%; min-height: 2.5rem; padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; background-color: #f8fafc;" value="{{ $user->profile->specialization ?? '' }}" readonly />
                             </div>
                             <div>
-                                <x-input-label for="portfolio_url" :value="__('Portfolio URL')" />
-                                <x-text-input id="portfolio_url" name="portfolio_url" type="url" class="mt-1 block w-full" :value="old('portfolio_url', $user->profile->portfolio_url ?? '')" placeholder="https://..." />
-                                <x-input-error class="mt-2" :messages="$errors->get('portfolio_url')" />
+                                <x-input-label for="intake_code" :value="__('Intake Code')" />
+                                <input id="intake_code" type="text" class="mt-1 block w-full" style="width: 100%; min-height: 2.5rem; padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; background-color: #f8fafc;" value="{{ $user->profile->intake_code ?? '' }}" readonly />
                             </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <x-input-label for="personal_email" :value="__('Personal Email')" />
+                                <input id="personal_email" name="personal_email" type="email" class="mt-1 block w-full" style="width: 100%; min-height: 2.5rem; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem;" value="{{ old('personal_email', $user->profile->personal_email ?? '') }}" />
+                                <x-input-error class="mt-2" :messages="$errors->get('personal_email')" />
+                            </div>
+                            <div>
+                                <x-input-label for="contact_number" :value="__('Contact Number')" />
+                                <input id="contact_number" name="contact_number" type="text" class="mt-1 block w-full" style="width: 100%; min-height: 2.5rem; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem;" value="{{ old('contact_number', $user->profile->contact_number ?? '') }}" />
+                                <x-input-error class="mt-2" :messages="$errors->get('contact_number')" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <x-input-label for="bio" :value="__('Profile Summary')" />
+                            <textarea id="bio" name="bio" rows="4" class="mt-1 block w-full" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">{{ old('bio', $user->profile->bio ?? '') }}</textarea>
+                            <x-input-error class="mt-2" :messages="$errors->get('bio')" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="projects_summary" :value="__('Projects (one per line)')" />
+                            <textarea id="projects_summary" name="projects_summary" rows="4" class="mt-1 block w-full" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem;" placeholder="Inventory Dashboard - Built with Laravel and PostgreSQL
+Task Tracker - REST API + React UI">{{ old('projects_summary', $user->profile->projects_summary ?? '') }}</textarea>
+                            <x-input-error class="mt-2" :messages="$errors->get('projects_summary')" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="internship_status" :value="__('Internship Status')" />
+                            <select id="internship_status" name="internship_status" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                @php($currentStatus = old('internship_status', $user->profile->internship_status ?? 'looking'))
+                                <option value="looking" @selected($currentStatus === 'looking')>Looking for Placement</option>
+                                <option value="interviewing" @selected($currentStatus === 'interviewing')>Interviewing</option>
+                                <option value="secured" @selected($currentStatus === 'secured')>Offer Secured</option>
+                            </select>
+                            <x-input-error class="mt-2" :messages="$errors->get('internship_status')" />
                         </div>
 
                         <div class="flex items-center gap-4 pt-4 border-t border-slate-100">
@@ -103,26 +151,26 @@
                                 @csrf
                                 <div>
                                     <x-input-label for="institution_name" :value="__('Institution')" />
-                                    <x-text-input id="institution_name" name="institution_name" type="text" class="mt-1 block w-full" required />
+                                    <input id="institution_name" name="institution_name" type="text" class="mt-1 block w-full" style="width: 100%; min-height: 2.5rem; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem;" required />
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <x-input-label for="degree" :value="__('Degree')" />
-                                        <x-text-input id="degree" name="degree" type="text" class="mt-1 block w-full" placeholder="BSc, MSc..." required />
+                                        <input id="degree" name="degree" type="text" class="mt-1 block w-full" style="width: 100%; min-height: 2.5rem; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem;" placeholder="BSc, MSc..." required />
                                     </div>
                                     <div>
                                         <x-input-label for="field_of_study" :value="__('Field of Study')" />
-                                        <x-text-input id="field_of_study" name="field_of_study" type="text" class="mt-1 block w-full" placeholder="Computer Science..." required />
+                                        <input id="field_of_study" name="field_of_study" type="text" class="mt-1 block w-full" style="width: 100%; min-height: 2.5rem; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem;" placeholder="Computer Science..." required />
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <x-input-label for="start_date" :value="__('Start Date')" />
-                                        <x-text-input id="start_date" name="start_date" type="date" class="mt-1 block w-full" required />
+                                        <input id="start_date" name="start_date" type="date" class="mt-1 block w-full" style="width: 100%; min-height: 2.5rem; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem;" required />
                                     </div>
                                     <div>
                                         <x-input-label for="end_date" :value="__('End Date')" />
-                                        <x-text-input id="end_date" name="end_date" type="date" class="mt-1 block w-full" />
+                                        <input id="end_date" name="end_date" type="date" class="mt-1 block w-full" style="width: 100%; min-height: 2.5rem; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem;" />
                                     </div>
                                 </div>
                                 <div class="pt-2 flex justify-end">
@@ -174,7 +222,7 @@
                                 <div class="grid grid-cols-3 gap-4">
                                     <div class="col-span-2">
                                         <x-input-label for="name" :value="__('Skill Name')" />
-                                        <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" placeholder="e.g. PHP, Laravel, Figma" required />
+                                        <input id="name" name="name" type="text" class="mt-1 block w-full" style="width: 100%; min-height: 2.5rem; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem;" placeholder="e.g. PHP, Laravel, Figma" required />
                                     </div>
                                     <div class="col-span-1">
                                         <x-input-label for="proficiency" :value="__('Level')" />

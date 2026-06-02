@@ -5,7 +5,7 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ Auth::user()->isAdmin() ? route('admin.users.index') : route('dashboard') }}" class="flex items-center gap-2">
+                    <a href="{{ Auth::user()->isAdmin() ? route('admin.users.index') : (Auth::user()->isSupervisor() ? route('supervisor.dashboard') : route('dashboard')) }}" class="flex items-center gap-2">
                         <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-md">
                             <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                         </div>
@@ -18,6 +18,24 @@
                     @if(Auth::user()->isAdmin())
                         <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
                             {{ __('User Management') }}
+                        </x-nav-link>
+                    @elseif(Auth::user()->isSupervisor())
+                        <x-nav-link :href="route('supervisor.dashboard')" :active="request()->routeIs('supervisor.*')">
+                            {{ __('Supervisor Dashboard') }}
+                        </x-nav-link>
+                    @elseif(Auth::user()->isMentor())
+                        <x-nav-link :href="route('mentor.dashboard')" :active="request()->routeIs('mentor.dashboard')">
+                            {{ __('Mentor Dashboard') }}
+                        </x-nav-link>
+                    @elseif(Auth::user()->isStudent())
+                        <x-nav-link :href="route('student.clearance.create')" :active="request()->routeIs('student.clearance.*')">
+                            {{ __('Placement Submission') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('student.company-tracker.index')" :active="request()->routeIs('student.company-tracker.*')">
+                            {{ __('Company Tracker') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('student.resume.builder')" :active="request()->routeIs('student.resume.*')">
+                            {{ __('Resume Builder') }}
                         </x-nav-link>
                     @else
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
@@ -43,9 +61,17 @@
                     </x-slot>
 
                     <x-slot name="content">
+                        <!-- Account (global) -->
                         <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
+                            {{ __('Account') }}
                         </x-dropdown-link>
+
+                        <!-- Student-specific profile -->
+                        @if(Auth::user()->isStudent())
+                            <x-dropdown-link :href="route('student.profile.edit')">
+                                {{ __('Student Profile') }}
+                            </x-dropdown-link>
+                        @endif
 
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('logout') }}">
@@ -80,6 +106,24 @@
                 <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
                     {{ __('User Management') }}
                 </x-responsive-nav-link>
+            @elseif(Auth::user()->isSupervisor())
+                <x-responsive-nav-link :href="route('supervisor.dashboard')" :active="request()->routeIs('supervisor.*')">
+                    {{ __('Supervisor Dashboard') }}
+                </x-responsive-nav-link>
+            @elseif(Auth::user()->isMentor())
+                <x-responsive-nav-link :href="route('mentor.dashboard')" :active="request()->routeIs('mentor.dashboard')">
+                    {{ __('Mentor Dashboard') }}
+                </x-responsive-nav-link>
+            @elseif(Auth::user()->isStudent())
+                <x-responsive-nav-link :href="route('student.clearance.create')" :active="request()->routeIs('student.clearance.*')">
+                    {{ __('Placement Submission') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('student.company-tracker.index')" :active="request()->routeIs('student.company-tracker.*')">
+                    {{ __('Company Tracker') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('student.resume.builder')" :active="request()->routeIs('student.resume.*')">
+                    {{ __('Resume Builder') }}
+                </x-responsive-nav-link>
             @else
                 <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                     {{ __('Dashboard') }}
@@ -96,8 +140,14 @@
 
             <div class="mt-3 space-y-1">
                 <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
+                    {{ __('Account') }}
                 </x-responsive-nav-link>
+
+                @if(Auth::user()->isStudent())
+                    <x-responsive-nav-link :href="route('student.profile.edit')">
+                        {{ __('Student Profile') }}
+                    </x-responsive-nav-link>
+                @endif
 
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}">

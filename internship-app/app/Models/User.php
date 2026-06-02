@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role'])]
+#[Fillable(['name', 'email', 'password', 'role', 'mentor_id'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -35,6 +35,16 @@ class User extends Authenticatable
         return $this->hasOne(Profile::class);
     }
 
+    public function mentor()
+    {
+        return $this->belongsTo(User::class, 'mentor_id');
+    }
+
+    public function mentees()
+    {
+        return $this->hasMany(User::class, 'mentor_id');
+    }
+
     public function education()
     {
         return $this->hasMany(Education::class);
@@ -45,6 +55,11 @@ class User extends Authenticatable
         return $this->hasMany(Skill::class);
     }
 
+    public function applications()
+    {
+        return $this->hasMany(Application::class);
+    }
+
     public function isAdmin()
     {
         return $this->role === 'admin';
@@ -53,6 +68,11 @@ class User extends Authenticatable
     public function isMentor()
     {
         return $this->role === 'mentor';
+    }
+
+    public function isSupervisor()
+    {
+        return $this->role === 'supervisor';
     }
 
     public function isStudent()

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Education;
 use App\Models\Skill;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 
 class StudentProfileController extends Controller
@@ -28,19 +29,46 @@ class StudentProfileController extends Controller
     public function update(Request $request)
     {
         $validated = $request->validate([
-            'phone_number' => 'nullable|string|max:20',
-            'bio' => 'nullable|string',
-            'linkedin_url' => 'nullable|url|max:255',
-            'github_url' => 'nullable|url|max:255',
-            'portfolio_url' => 'nullable|url|max:255',
+            'name' => 'nullable|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'personal_email' => 'nullable|email|max:255',
+            'contact_number' => 'nullable|string|max:30',
+            'internship_status' => 'nullable|string|in:looking,interviewing,secured',
+            'bio' => 'nullable|string|max:3000',
+            'projects_summary' => 'nullable|string|max:3000',
+            'languages_summary' => 'nullable|string|max:3000',
+            'references_summary' => 'nullable|string|max:3000',
         ]);
 
         $user = $request->user();
+        $accountData = Arr::only($validated, ['name', 'email']);
+        if (filled($accountData['name'] ?? null) || filled($accountData['email'] ?? null)) {
+            if (filled($accountData['name'] ?? null)) {
+                $user->name = $accountData['name'];
+            }
+
+            if (filled($accountData['email'] ?? null)) {
+                $user->email = $accountData['email'];
+                $user->email_verified_at = null;
+            }
+
+            $user->save();
+        }
+
+        $profileData = Arr::only($validated, [
+            'personal_email',
+            'contact_number',
+            'internship_status',
+            'bio',
+            'projects_summary',
+            'languages_summary',
+            'references_summary',
+        ]);
         
         if ($user->profile) {
-            $user->profile->update($validated);
+            $user->profile->update($profileData);
         } else {
-            $user->profile()->create($validated);
+            $user->profile()->create($profileData);
         }
 
         return redirect()->route('student.profile.edit')->with('status', 'profile-updated');

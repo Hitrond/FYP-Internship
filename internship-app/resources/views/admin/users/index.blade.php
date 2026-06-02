@@ -48,6 +48,7 @@
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
                                                 @if($user->role === 'admin') bg-indigo-100 text-indigo-800
                                                 @elseif($user->role === 'mentor') bg-emerald-100 text-emerald-800
+                                                @elseif($user->role === 'supervisor') bg-amber-100 text-amber-800
                                                 @else bg-slate-100 text-slate-800 @endif
                                             ">
                                                 {{ $user->role }}
