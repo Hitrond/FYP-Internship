@@ -23,6 +23,7 @@ class Profile extends Model
         'portfolio_url',
         'projects_summary',
         'mentor_staff_id',
+        'mentor_department',
         'languages_summary',
         'references_summary',
         'notify_email_missed_logbook',

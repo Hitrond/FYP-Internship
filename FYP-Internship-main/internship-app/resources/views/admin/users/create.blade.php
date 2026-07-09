@@ -1,71 +1,62 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-2xl text-slate-800 leading-tight">
-            {{ __('Add New User') }}
-        </h2>
+        <div>
+            <p class="text-sm font-semibold uppercase tracking-[0.16em] text-indigo-600">User management</p>
+            <h2 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">Add a new user</h2>
+            <p class="mt-1 text-sm text-slate-500">Create controlled access for a system participant.</p>
+        </div>
     </x-slot>
 
-    <div class="py-12 bg-slate-50 min-h-screen">
-        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-slate-200">
-                <div class="p-8">
-                    
-                    <form method="POST" action="{{ route('admin.users.store') }}" class="space-y-6">
-                        @csrf
+    <div class="min-h-screen bg-slate-50 py-10">
+        <div class="mx-auto max-w-2xl px-4 sm:px-6">
+            <form method="POST" action="{{ route('admin.users.store') }}" class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                @csrf
 
-                        <!-- Name -->
-                        <div>
-                            <x-input-label for="name" :value="__('Name')" />
-                            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-                            <x-input-error :messages="$errors->get('name')" class="mt-2" />
-                        </div>
+                <div class="grid gap-6 p-7 sm:grid-cols-2">
+                    <label class="sm:col-span-2">
+                        <span class="mb-2 block text-sm font-bold text-slate-700">Full name</span>
+                        <input name="name" value="{{ old('name') }}" required autofocus autocomplete="name" class="w-full rounded-xl border-slate-300 focus:border-indigo-500 focus:ring-indigo-500">
+                        @error('name')<span class="mt-1 block text-xs text-rose-600">{{ $message }}</span>@enderror
+                    </label>
 
-                        <!-- Email Address -->
-                        <div>
-                            <x-input-label for="email" :value="__('Email')" />
-                            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
-                            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-                        </div>
+                    <label class="sm:col-span-2">
+                        <span class="mb-2 block text-sm font-bold text-slate-700">Email address</span>
+                        <input type="email" name="email" value="{{ old('email') }}" required autocomplete="username" class="w-full rounded-xl border-slate-300 focus:border-indigo-500 focus:ring-indigo-500">
+                        @error('email')<span class="mt-1 block text-xs text-rose-600">{{ $message }}</span>@enderror
+                    </label>
 
-                        <!-- Role -->
-                        <div>
-                            <x-input-label for="role" :value="__('Role')" />
-                            <select id="role" name="role" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
-                                <option value="student" {{ old('role') == 'student' ? 'selected' : '' }}>Student</option>
-                                <option value="mentor" {{ old('role') == 'mentor' ? 'selected' : '' }}>Mentor</option>
-                                <option value="supervisor" {{ old('role') == 'supervisor' ? 'selected' : '' }}>Supervisor</option>
-                                <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
-                            </select>
-                            <x-input-error :messages="$errors->get('role')" class="mt-2" />
-                        </div>
+                    <label class="sm:col-span-2">
+                        <span class="mb-2 block text-sm font-bold text-slate-700">System role</span>
+                        <select name="role" required class="w-full rounded-xl border-slate-300 focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="student" @selected(old('role') === 'student')>Student</option>
+                            <option value="mentor" @selected(old('role') === 'mentor')>Academic Mentor</option>
+                            <option value="supervisor" @selected(old('role') === 'supervisor')>Industrial Supervisor</option>
+                            <option value="admin" @selected(old('role') === 'admin')>Administrator</option>
+                        </select>
+                        @error('role')<span class="mt-1 block text-xs text-rose-600">{{ $message }}</span>@enderror
+                    </label>
 
-                        <!-- Password -->
-                        <div class="mt-4">
-                            <x-input-label for="password" :value="__('Password')" />
-                            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-                            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-                        </div>
+                    <label>
+                        <span class="mb-2 block text-sm font-bold text-slate-700">Temporary password</span>
+                        <input type="password" name="password" required autocomplete="new-password" class="w-full rounded-xl border-slate-300 focus:border-indigo-500 focus:ring-indigo-500">
+                        @error('password')<span class="mt-1 block text-xs text-rose-600">{{ $message }}</span>@enderror
+                    </label>
 
-                        <!-- Confirm Password -->
-                        <div class="mt-4">
-                            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-                            <x-text-input id="password_confirmation" class="block mt-1 w-full" type="password" name="password_confirmation" required autocomplete="new-password" />
-                            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-                        </div>
+                    <label>
+                        <span class="mb-2 block text-sm font-bold text-slate-700">Confirm password</span>
+                        <input type="password" name="password_confirmation" required autocomplete="new-password" class="w-full rounded-xl border-slate-300 focus:border-indigo-500 focus:ring-indigo-500">
+                    </label>
 
-                        <div class="flex items-center justify-end mt-8 pt-6 border-t border-slate-100">
-                            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-4" href="{{ route('admin.users.index') }}">
-                                {{ __('Cancel') }}
-                            </a>
-
-                            <x-primary-button class="bg-indigo-600 hover:bg-indigo-700">
-                                {{ __('Create User') }}
-                            </x-primary-button>
-                        </div>
-                    </form>
-
+                    <div class="sm:col-span-2 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm leading-6 text-blue-800">
+                        Academic Mentors are assigned from the semester cohort screen. Industrial Supervisor accounts are provisioned by admin after Academic Mentor placement approval.
+                    </div>
                 </div>
-            </div>
+
+                <div class="flex justify-end gap-3 border-t border-slate-200 bg-slate-50 px-7 py-5">
+                    <a href="{{ route('admin.users.index') }}" class="rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50">Cancel</a>
+                    <button class="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-indigo-700">Create user</button>
+                </div>
+            </form>
         </div>
     </div>
 </x-app-layout>

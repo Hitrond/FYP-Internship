@@ -15,13 +15,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'System Administrator',
-            'email' => 'admin@admin.com',
-            'password' => bcrypt('password'),
-            'role' => 'admin',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'admin@admin.com'], // The unique column it checks first
+            [
+                'name' => 'System Administrator',
+                'password' => bcrypt('password'), // This will reset the password to 'password'
+                'role' => 'admin',
+            ]
+        );
     }
 }

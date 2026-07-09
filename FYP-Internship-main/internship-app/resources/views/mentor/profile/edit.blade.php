@@ -1,12 +1,13 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-2xl text-slate-800 leading-tight">
-            {{ __('Mentor Profile') }}
+        <p class="text-sm font-semibold uppercase tracking-[0.16em] text-indigo-600">University workspace</p>
+        <h2 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">
+            {{ __('Academic Mentor Profile') }}
         </h2>
     </x-slot>
 
-    <div class="py-12 bg-slate-50 min-h-screen">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="min-h-screen bg-slate-50 py-8">
+        <div class="mx-auto max-w-4xl space-y-6 px-4 sm:px-6 lg:px-8">
             @if (session('status') === 'profile-updated')
                 <div class="p-4 text-sm text-green-800 rounded-lg bg-green-50 shadow-sm border border-green-200">
                     Profile updated successfully.

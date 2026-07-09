@@ -1,12 +1,13 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-2xl text-slate-800 leading-tight">
+        <p class="text-sm font-semibold uppercase tracking-[0.16em] text-indigo-600">Student workspace</p>
+        <h2 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">
             {{ __('Student Profile & Competencies') }}
         </h2>
     </x-slot>
 
-    <div class="py-12 bg-slate-50 min-h-screen">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+    <div class="min-h-screen bg-slate-50 py-8">
+        <div class="mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
 
             @if (session('status'))
                 <div class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 shadow-sm" role="alert">
@@ -14,7 +15,26 @@
                 </div>
             @endif
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-slate-200 transition duration-300 hover:shadow-md">
+            <section id="document-profile" class="rounded-2xl border border-indigo-200 bg-indigo-50 p-5">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h3 class="font-bold text-indigo-900">Document Builder readiness</h3>
+                        <p class="mt-1 text-sm text-indigo-700">Resume: {{ $resumeReadiness['completed'] }}/{{ $resumeReadiness['total'] }} required · Cover letter: {{ $coverLetterReadiness['completed'] }}/{{ $coverLetterReadiness['total'] }} required</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <a href="{{ route('student.resume.builder') }}" class="rounded-xl bg-white px-4 py-2 text-sm font-bold text-indigo-700 shadow-sm ring-1 ring-indigo-200">Resume</a>
+                        <a href="{{ route('student.cover-letter.create') }}" class="rounded-xl bg-white px-4 py-2 text-sm font-bold text-indigo-700 shadow-sm ring-1 ring-indigo-200">Cover Letter</a>
+                    </div>
+                </div>
+                @if (! $resumeReadiness['complete'] || ! $coverLetterReadiness['complete'])
+                    <p class="mt-4 text-sm text-rose-700">
+                        Missing required items:
+                        {{ collect(array_merge($resumeReadiness['missing'], $coverLetterReadiness['missing']))->unique()->implode(', ') }}.
+                    </p>
+                @endif
+            </section>
+
+            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:shadow-md">
                 <div class="p-8">
                     <h3 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
                         <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
@@ -88,6 +108,24 @@
                             <textarea id="projects_summary" name="projects_summary" rows="4" class="mt-1 block w-full" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem;" placeholder="Inventory Dashboard - Built with Laravel and PostgreSQL
 Task Tracker - REST API + React UI">{{ old('projects_summary', $user->profile->projects_summary ?? '') }}</textarea>
                             <x-input-error class="mt-2" :messages="$errors->get('projects_summary')" />
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+                            <div>
+                                <x-input-label for="linkedin_url" :value="__('LinkedIn URL')" />
+                                <x-text-input id="linkedin_url" name="linkedin_url" type="url" class="mt-1" :value="old('linkedin_url', $user->profile->linkedin_url ?? '')" placeholder="https://linkedin.com/in/..." />
+                                <x-input-error class="mt-2" :messages="$errors->get('linkedin_url')" />
+                            </div>
+                            <div>
+                                <x-input-label for="github_url" :value="__('GitHub URL')" />
+                                <x-text-input id="github_url" name="github_url" type="url" class="mt-1" :value="old('github_url', $user->profile->github_url ?? '')" placeholder="https://github.com/..." />
+                                <x-input-error class="mt-2" :messages="$errors->get('github_url')" />
+                            </div>
+                            <div>
+                                <x-input-label for="portfolio_url" :value="__('Portfolio URL')" />
+                                <x-text-input id="portfolio_url" name="portfolio_url" type="url" class="mt-1" :value="old('portfolio_url', $user->profile->portfolio_url ?? '')" placeholder="https://yourportfolio.com" />
+                                <x-input-error class="mt-2" :messages="$errors->get('portfolio_url')" />
+                            </div>
                         </div>
 
                         <div>

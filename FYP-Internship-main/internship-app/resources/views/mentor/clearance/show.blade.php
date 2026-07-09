@@ -1,15 +1,16 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex flex-col gap-1">
-            <h2 class="font-semibold text-2xl text-slate-800 leading-tight">
+            <p class="text-sm font-semibold uppercase tracking-[0.16em] text-indigo-600">Placement review</p>
+            <h2 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">
                 {{ __('Review Placement Submission') }}
             </h2>
             <p class="text-sm text-slate-500">Verify documents and approve the placement.</p>
         </div>
     </x-slot>
 
-    <div class="py-12 bg-slate-50 min-h-screen">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="min-h-screen bg-slate-50 py-8">
+        <div class="mx-auto max-w-4xl space-y-6 px-4 sm:px-6 lg:px-8">
             @if (session('error'))
                 <div class="p-4 text-sm text-red-800 rounded-lg bg-red-50 shadow-sm border border-red-200">
                     {{ session('error') }}
@@ -41,6 +42,17 @@
                         <p class="text-xs uppercase tracking-wider text-slate-400">Company</p>
                         <p class="text-lg font-semibold text-slate-900">{{ $clearance->company_name }}</p>
                         <p class="text-sm text-slate-500">{{ $clearance->office_address }}</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 rounded-lg border border-indigo-100 bg-indigo-50 p-4 md:grid-cols-2">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-indigo-500">Official start date</p>
+                            <p class="mt-1 font-bold text-indigo-950">{{ $clearance->start_date?->format('M d, Y') ?? 'Not provided' }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-indigo-500">Official end date</p>
+                            <p class="mt-1 font-bold text-indigo-950">{{ $clearance->end_date?->format('M d, Y') ?? 'Not provided' }}</p>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">

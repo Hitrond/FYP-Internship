@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'mentor_id'])]
+#[Fillable(['name', 'email', 'password', 'role', 'mentor_id', 'supervisor_id'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -35,16 +35,6 @@ class User extends Authenticatable
         return $this->hasOne(Profile::class);
     }
 
-    public function mentor()
-    {
-        return $this->belongsTo(User::class, 'mentor_id');
-    }
-
-    public function mentees()
-    {
-        return $this->hasMany(User::class, 'mentor_id');
-    }
-
     public function education()
     {
         return $this->hasMany(Education::class);
@@ -58,6 +48,56 @@ class User extends Authenticatable
     public function applications()
     {
         return $this->hasMany(Application::class);
+    }
+
+    public function logbooks()
+    {
+        return $this->hasMany(Logbook::class);
+    }
+
+    public function studentDocuments()
+    {
+        return $this->hasMany(StudentDocument::class);
+    }
+
+    public function finalClearance()
+    {
+        return $this->hasOne(FinalClearance::class, 'student_id');
+    }
+
+    public function placementClearances()
+    {
+        return $this->hasMany(PlacementClearance::class, 'student_id');
+    }
+
+    public function latestPlacementClearance()
+    {
+        return $this->hasOne(PlacementClearance::class, 'student_id')->latestOfMany();
+    }
+
+    public function cycleAssignments()
+    {
+        return $this->hasMany(InternshipCycleStudent::class, 'student_id');
+    }
+
+    public function mentoredCycleAssignments()
+    {
+        return $this->hasMany(InternshipCycleStudent::class, 'mentor_id');
+    }
+
+    public function performanceEvaluations()
+    {
+        return $this->hasMany(PerformanceEvaluation::class, 'student_id');
+    }
+
+    public function submittedPerformanceEvaluations()
+    {
+        return $this->hasMany(PerformanceEvaluation::class, 'supervisor_id');
+    }
+
+    public function internshipResult()
+    {
+        return $this->hasOne(InternshipResult::class, 'student_id');
     }
 
     public function isAdmin()
@@ -78,5 +118,37 @@ class User extends Authenticatable
     public function isStudent()
     {
         return $this->role === 'student';
+    }
+
+    /**
+     * For a Student: Get the supervisor assigned to them.
+     */
+    public function supervisor()
+    {
+        return $this->belongsTo(User::class, 'supervisor_id');
+    }
+
+    /**
+     * For a Supervisor: Get all students assigned to them.
+     */
+    public function supervisedStudents()
+    {
+        return $this->hasMany(User::class, 'supervisor_id');
+    }
+
+    /**
+     * For a Student: Get the mentor assigned to them.
+     */
+    public function mentor()
+    {
+        return $this->belongsTo(User::class, 'mentor_id');
+    }
+
+    /**
+     * For a Mentor: Get all students assigned to them.
+     */
+    public function assignedStudents()
+    {
+        return $this->hasMany(User::class, 'mentor_id');
     }
 }

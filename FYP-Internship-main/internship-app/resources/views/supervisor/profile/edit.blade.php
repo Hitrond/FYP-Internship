@@ -1,12 +1,13 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-2xl text-slate-800 leading-tight">
-            {{ __('Supervisor Profile') }}
+        <p class="text-sm font-semibold uppercase tracking-[0.16em] text-indigo-600">Company workspace</p>
+        <h2 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">
+            {{ __('Industrial Supervisor Profile') }}
         </h2>
     </x-slot>
 
-    <div class="py-12 bg-slate-50 min-h-screen">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="min-h-screen bg-slate-50 py-8">
+        <div class="mx-auto max-w-4xl space-y-6 px-4 sm:px-6 lg:px-8">
             @if (session('status') === 'profile-updated')
                 <div class="p-4 text-sm text-green-800 rounded-lg bg-green-50 shadow-sm border border-green-200">
                     Profile updated successfully.
@@ -67,11 +68,17 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <x-input-label for="signature_image" :value="__('E-Signature (PNG/JPG)')" />
+                                @if($user->profile?->signature_path)
+                                    <p class="mt-1 text-xs font-semibold text-emerald-600">E-signature uploaded. Choose a file to replace it.</p>
+                                @endif
                                 <input id="signature_image" name="signature_image" type="file" accept="image/png,image/jpeg" class="mt-1 block w-full" />
                                 <x-input-error class="mt-2" :messages="$errors->get('signature_image')" />
                             </div>
                             <div>
                                 <x-input-label for="company_stamp" :value="__('Company Stamp (PNG/JPG)')" />
+                                @if($user->profile?->stamp_path)
+                                    <p class="mt-1 text-xs font-semibold text-emerald-600">Company stamp uploaded. Choose a file to replace it.</p>
+                                @endif
                                 <input id="company_stamp" name="company_stamp" type="file" accept="image/png,image/jpeg" class="mt-1 block w-full" />
                                 <x-input-error class="mt-2" :messages="$errors->get('company_stamp')" />
                             </div>

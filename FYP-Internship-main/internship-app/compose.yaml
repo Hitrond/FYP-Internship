@@ -1,27 +1,67 @@
 services:
   laravel.test:
-    image: 'laravelsail/php84-composer:latest'
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: 'internship-app/php84'
     working_dir: /var/www/html
     ports:
-      - '80:8000'
+      - '${APP_PORT:-80}:8000'
     volumes:
-      - C:/Projects/FYP-Internship-main/internship-app:/var/www/html
-    # Native Docker PHP commands to build the PostgreSQL driver from source!
-    command: sh -c "apt-get update && apt-get install -y libpq-dev && docker-php-ext-install pdo_pgsql && composer install --ignore-platform-reqs && php artisan serve --host=0.0.0.0 --port=8000"
+      - '.:/var/www/html'
+      - 'fyp-vendor:/var/www/html/vendor'
+      - 'fyp-framework-cache:/var/www/html/storage/framework'
+      - 'fyp-bootstrap-cache:/var/www/html/bootstrap/cache'
+    command: >
+      sh -c "lock_hash=$$(sha256sum composer.lock | cut -d ' ' -f 1);
+      if [ ! -f vendor/autoload.php ] || [ \"$$(cat vendor/.composer-lock.sha256 2>/dev/null)\" != \"$$lock_hash\" ]; then
+        composer install --no-interaction --prefer-dist --optimize-autoloader || exit 1;
+        printf '%s\n' \"$$lock_hash\" > vendor/.composer-lock.sha256;
+      fi;
+      php artisan migrate --force || exit 1;
+      php artisan schedule:work &
+      php artisan queue:work --sleep=3 --tries=3 --timeout=120 &
+      exec php artisan serve --host=0.0.0.0 --port=8000"
+    restart: unless-stopped
     depends_on:
-      - pgsql
+      pgsql:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - php
+        - -r
+        - 'exit(@file_get_contents("http://127.0.0.1:8000/up") === false ? 1 : 0);'
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
 
   pgsql:
     image: 'postgres:15-alpine'
     ports:
-      - '5432:5432'
+      - '${FORWARD_DB_PORT:-5432}:5432'
     environment:
-      POSTGRES_DB: 'laravel'
-      POSTGRES_USER: 'sail'
-      POSTGRES_PASSWORD: 'password'
+      POSTGRES_DB: '${DB_DATABASE:-laravel}'
+      POSTGRES_USER: '${DB_USERNAME:-sail}'
+      POSTGRES_PASSWORD: '${DB_PASSWORD:-password}'
     volumes:
       - 'fyp-postgres:/var/lib/postgresql/data'
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'pg_isready -q -d "$${POSTGRES_DB}" -U "$${POSTGRES_USER}"'
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
   fyp-postgres:
+    driver: local
+  fyp-vendor:
+    driver: local
+  fyp-framework-cache:
+    driver: local
+  fyp-bootstrap-cache:
     driver: local

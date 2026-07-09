@@ -2,19 +2,31 @@
     <x-slot name="header">
         <div class="flex flex-col gap-4">
             <div class="flex flex-col gap-1">
-                <h2 class="font-semibold text-2xl text-slate-800 leading-tight">
+                <p class="text-sm font-semibold uppercase tracking-[0.16em] text-indigo-600">Document studio</p>
+                <h2 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">
                     {{ __('Resume Builder') }}
                 </h2>
                 <p class="text-sm text-slate-500">Choose a template and preview your ATS-ready resume.</p>
             </div>
-            <a href="{{ route('student.resume.download', ['template' => $selectedTemplate]) }}" style="display:flex; align-items:center; justify-content:center; width:100%; min-height:3.25rem; padding:0.875rem 1rem; border-radius:0.75rem; background:#059669; color:#ffffff; font-size:0.75rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; text-decoration:none; box-shadow:0 10px 15px -3px rgba(0,0,0,0.12);">
-                Download PDF Resume
-            </a>
+            @if ($readiness['complete'])
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <a href="{{ route('student.resume.download', ['template' => $selectedTemplate]) }}" class="flex min-h-[3.25rem] w-full items-center justify-center rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-700/15 transition hover:bg-emerald-700">
+                        Download PDF Resume
+                    </a>
+                    <a href="{{ route('student.resume.download-doc', ['template' => $selectedTemplate]) }}" class="flex min-h-[3.25rem] w-full items-center justify-center rounded-xl bg-white px-4 py-3 text-sm font-bold text-emerald-700 ring-1 ring-emerald-200 transition hover:bg-emerald-50">
+                        Download DOC Resume
+                    </a>
+                </div>
+            @else
+                <a href="{{ route('student.profile.edit') }}#document-profile" class="flex min-h-[3.25rem] w-full items-center justify-center rounded-xl bg-amber-500 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-amber-700/15 transition hover:bg-amber-600">
+                    Complete Profile to Download
+                </a>
+            @endif
         </div>
     </x-slot>
 
-    <div class="py-12 bg-slate-50 min-h-screen">
-        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="min-h-screen bg-slate-50 py-8">
+        <div class="mx-auto max-w-6xl space-y-6 px-4 sm:px-6 lg:px-8">
             @php
                 $templateLabels = [
                     'classic' => 'Traditional / Corporate (Caleb Smith)',
@@ -22,6 +34,20 @@
                     'prime-ats' => 'Minimalist with Color Accents (Taylor Greene)',
                 ];
             @endphp
+
+            @if (session('document-error'))
+                <div class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-800">{{ session('document-error') }}</div>
+            @endif
+
+            @include('student.documents.partials.profile-readiness', ['readiness' => $readiness])
+
+            @include('student.documents.partials.library', [
+                'documentType' => 'resume',
+                'documentTypeLabel' => 'Resume',
+                'uploadRoute' => route('student.resume.upload'),
+                'documents' => $documents,
+            ])
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-slate-200">
                 <div class="p-6">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

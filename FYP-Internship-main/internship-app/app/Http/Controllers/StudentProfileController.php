@@ -2,24 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Education;
 use App\Models\Skill;
+use App\Services\StudentDocumentReadinessService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Auth;
 
 class StudentProfileController extends Controller
 {
     /**
      * Display the student profile form.
      */
-    public function edit(Request $request)
+    public function edit(Request $request, StudentDocumentReadinessService $readinessService)
     {
         $user = $request->user();
         $user->load(['profile', 'education', 'skills']);
 
         return view('student.profile.edit', [
             'user' => $user,
+            'resumeReadiness' => $readinessService->resume($user),
+            'coverLetterReadiness' => $readinessService->coverLetter($user),
         ]);
     }
 
@@ -38,6 +40,9 @@ class StudentProfileController extends Controller
             'projects_summary' => 'nullable|string|max:3000',
             'languages_summary' => 'nullable|string|max:3000',
             'references_summary' => 'nullable|string|max:3000',
+            'linkedin_url' => 'nullable|url|max:500',
+            'github_url' => 'nullable|url|max:500',
+            'portfolio_url' => 'nullable|url|max:500',
         ]);
 
         $user = $request->user();
@@ -63,8 +68,11 @@ class StudentProfileController extends Controller
             'projects_summary',
             'languages_summary',
             'references_summary',
+            'linkedin_url',
+            'github_url',
+            'portfolio_url',
         ]);
-        
+
         if ($user->profile) {
             $user->profile->update($profileData);
         } else {

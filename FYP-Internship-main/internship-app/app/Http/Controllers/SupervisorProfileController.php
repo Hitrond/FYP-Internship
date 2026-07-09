@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Validation\Rule;
 
 class SupervisorProfileController extends Controller
 {
@@ -23,7 +25,12 @@ class SupervisorProfileController extends Controller
             'company_name' => ['nullable', 'string', 'max:255'],
             'company_address' => ['nullable', 'string', 'max:255'],
             'industry' => ['nullable', 'string', 'max:100'],
-            'personal_email' => ['nullable', 'email', 'max:255'],
+            'personal_email' => [
+                'nullable',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($request->user()->id),
+            ],
             'signature_image' => ['nullable', 'file', 'mimes:png,jpg,jpeg', 'max:5120'],
             'company_stamp' => ['nullable', 'file', 'mimes:png,jpg,jpeg', 'max:5120'],
         ]);
@@ -46,11 +53,16 @@ class SupervisorProfileController extends Controller
                 ->store('supervisors/stamps', 'local');
         }
 
-        if ($user->profile) {
-            $user->profile->update($validated);
-        } else {
-            $user->profile()->create($validated);
-        }
+        $profileData = Arr::except($validated, [
+            'personal_email',
+            'signature_image',
+            'company_stamp',
+        ]);
+
+        $user->profile()->updateOrCreate(
+            ['user_id' => $user->id],
+            $profileData
+        );
 
         return redirect()->route('supervisor.profile.edit')->with('status', 'profile-updated');
     }

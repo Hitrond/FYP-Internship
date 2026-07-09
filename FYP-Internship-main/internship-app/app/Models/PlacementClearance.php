@@ -8,10 +8,13 @@ class PlacementClearance extends Model
 {
     protected $fillable = [
         'student_id',
+        'internship_cycle_id',
         'mentor_id',
         'supervisor_user_id',
         'company_name',
         'office_address',
+        'start_date',
+        'end_date',
         'supervisor_name',
         'supervisor_email',
         'supervisor_personal_email',
@@ -27,6 +30,8 @@ class PlacementClearance extends Model
     protected $casts = [
         'approved_at' => 'datetime',
         'rejected_at' => 'datetime',
+        'start_date' => 'date',
+        'end_date' => 'date',
     ];
 
     public function student()
@@ -42,5 +47,15 @@ class PlacementClearance extends Model
     public function supervisorUser()
     {
         return $this->belongsTo(User::class, 'supervisor_user_id');
+    }
+
+    public function finalClearance()
+    {
+        return $this->hasOne(FinalClearance::class);
+    }
+
+    public function cycle()
+    {
+        return $this->belongsTo(InternshipCycle::class, 'internship_cycle_id');
     }
 }

@@ -1,150 +1,240 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Company Tracker') }}
-        </h2>
+        <div class="flex flex-col gap-1">
+            <p class="text-sm font-semibold uppercase tracking-[0.16em] text-indigo-600">Student workspace</p>
+            <h2 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">Company Tracker</h2>
+            <p class="text-sm text-slate-500">Track applications, contacts, follow-ups, and offer letters in one place.</p>
+        </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100 space-y-8">
-                    <div>
-                        <h3 class="text-lg font-semibold">Add company</h3>
+    <div class="min-h-screen bg-slate-50 py-8">
+        <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+            @if (session('success'))
+                <div class="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+                    {{ session('success') }}
+                </div>
+            @endif
 
-                        <form method="POST" action="{{ route('student.company-tracker.store') }}" class="mt-4 grid grid-cols-1 md:grid-cols-6 gap-4">
+            @if ($errors->any())
+                <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+                    <p class="font-semibold">Please correct the highlighted information.</p>
+                    <ul class="mt-2 list-disc pl-5">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                @foreach ([
+                    ['label' => 'Total', 'value' => $applications->count()],
+                    ['label' => 'Applied', 'value' => $statusCounts->get('Applied', 0)],
+                    ['label' => 'Interviewing', 'value' => $statusCounts->get('Interviewing', 0)],
+                    ['label' => 'Accepted', 'value' => $statusCounts->get('Accepted', 0)],
+                ] as $metric)
+                    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ $metric['label'] }}</p>
+                        <p class="mt-2 text-2xl font-bold text-slate-900">{{ $metric['value'] }}</p>
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div class="border-b border-slate-100 p-6">
+                    <h3 class="text-lg font-semibold text-slate-900">Add an application</h3>
+                    <p class="text-sm text-slate-500">Only the company name and status are required.</p>
+                </div>
+
+                <form method="POST" action="{{ route('student.companies.store') }}" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-6 gap-5 p-6">
+                    @csrf
+
+                    <div class="md:col-span-2">
+                        <x-input-label for="company_name" value="Company" />
+                        <x-text-input id="company_name" name="company_name" value="{{ old('company_name') }}" class="mt-1 block w-full" required />
+                    </div>
+                    <div class="md:col-span-2">
+                        <x-input-label for="position_title" value="Internship role" />
+                        <x-text-input id="position_title" name="position_title" value="{{ old('position_title') }}" class="mt-1 block w-full" />
+                    </div>
+                    <div class="md:col-span-2">
+                        <x-input-label for="status" value="Status" />
+                        <select id="status" name="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                            @foreach ($statuses as $status)
+                                <option value="{{ $status }}" @selected(old('status', 'Interested') === $status)>{{ $status }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <x-input-label for="location" value="Location" />
+                        <x-text-input id="location" name="location" value="{{ old('location') }}" class="mt-1 block w-full" />
+                    </div>
+                    <div class="md:col-span-2">
+                        <x-input-label for="applied_on" value="Applied on" />
+                        <x-text-input id="applied_on" type="date" name="applied_on" value="{{ old('applied_on') }}" class="mt-1 block w-full" />
+                    </div>
+                    <div class="md:col-span-2">
+                        <x-input-label for="next_followup_on" value="Next follow-up" />
+                        <x-text-input id="next_followup_on" type="date" name="next_followup_on" value="{{ old('next_followup_on') }}" class="mt-1 block w-full" />
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <x-input-label for="contact_name" value="Contact person" />
+                        <x-text-input id="contact_name" name="contact_name" value="{{ old('contact_name') }}" class="mt-1 block w-full" />
+                    </div>
+                    <div class="md:col-span-2">
+                        <x-input-label for="contact_email" value="Contact email" />
+                        <x-text-input id="contact_email" type="email" name="contact_email" value="{{ old('contact_email') }}" class="mt-1 block w-full" />
+                    </div>
+                    <div class="md:col-span-2">
+                        <x-input-label for="contact_phone" value="Contact phone" />
+                        <x-text-input id="contact_phone" name="contact_phone" value="{{ old('contact_phone') }}" class="mt-1 block w-full" />
+                    </div>
+
+                    <div class="md:col-span-3">
+                        <x-input-label for="job_url" value="Job posting URL" />
+                        <x-text-input id="job_url" type="url" name="job_url" value="{{ old('job_url') }}" class="mt-1 block w-full" />
+                    </div>
+                    <div class="md:col-span-3">
+                        <x-input-label for="offer_letter" value="Offer letter (PDF, optional)" />
+                        <input id="offer_letter" type="file" name="offer_letter" accept="application/pdf" class="mt-1 block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm" />
+                    </div>
+
+                    <div class="md:col-span-6">
+                        <x-input-label for="notes" value="Notes" />
+                        <textarea id="notes" name="notes" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">{{ old('notes') }}</textarea>
+                    </div>
+
+                    <div class="md:col-span-6 flex justify-end">
+                        <button type="submit" class="inline-flex items-center rounded-lg bg-indigo-600 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:bg-indigo-700">
+                            Add application
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <h3 class="text-lg font-semibold text-slate-900">Your applications</h3>
+                    <p class="text-sm text-slate-500">{{ $applications->count() }} tracked {{ Str::plural('company', $applications->count()) }}</p>
+                </div>
+
+                @forelse ($applications as $application)
+                    <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+                        <form method="POST" action="{{ route('student.companies.update', $application) }}" enctype="multipart/form-data">
                             @csrf
+                            @method('PUT')
 
-                            <div class="md:col-span-2">
-                                <x-input-label for="company_name" value="Company" />
-                                <x-text-input id="company_name" name="company_name" value="{{ old('company_name') }}" class="mt-1" required />
-                                @error('company_name')<div class="text-sm text-red-600 mt-1">{{ $message }}</div>@enderror
+                            <div class="flex flex-col gap-4 border-b border-slate-100 p-6 md:flex-row md:items-center md:justify-between">
+                                <div>
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <h4 class="text-lg font-bold text-slate-900">{{ $application->company_name }}</h4>
+                                        <span class="rounded-full px-2.5 py-1 text-xs font-semibold
+                                            @if($application->status === 'Accepted') bg-emerald-100 text-emerald-800
+                                            @elseif($application->status === 'Rejected') bg-red-100 text-red-800
+                                            @elseif($application->status === 'Interviewing') bg-blue-100 text-blue-800
+                                            @elseif($application->status === 'Offered') bg-violet-100 text-violet-800
+                                            @else bg-amber-100 text-amber-800 @endif">
+                                            {{ $application->status }}
+                                        </span>
+                                    </div>
+                                    <p class="mt-1 text-sm text-slate-500">{{ $application->position_title ?: 'Role not specified' }}</p>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-3">
+                                    @if ($application->offer_letter_path)
+                                        <a href="{{ route('student.companies.offer-letter', $application) }}" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800">
+                                            Download offer
+                                        </a>
+                                    @endif
+                                    @if ($application->job_url)
+                                        <a href="{{ $application->job_url }}" target="_blank" rel="noopener" class="text-sm font-semibold text-slate-600 hover:text-slate-900">
+                                            Job posting ↗
+                                        </a>
+                                    @endif
+                                    <button type="submit" class="rounded-lg bg-slate-900 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white hover:bg-slate-700">
+                                        Save
+                                    </button>
+                                </div>
                             </div>
 
-                            <div class="md:col-span-2">
-                                <x-input-label for="position_title" value="Role" />
-                                <x-text-input id="position_title" name="position_title" value="{{ old('position_title') }}" class="mt-1" />
-                                @error('position_title')<div class="text-sm text-red-600 mt-1">{{ $message }}</div>@enderror
-                            </div>
+                            <div class="grid grid-cols-1 gap-5 p-6 md:grid-cols-3">
+                                <div>
+                                    <x-input-label for="company_name_{{ $application->id }}" value="Company" />
+                                    <x-text-input id="company_name_{{ $application->id }}" name="company_name" value="{{ $application->company_name }}" class="mt-1 block w-full" required />
+                                </div>
+                                <div>
+                                    <x-input-label for="position_title_{{ $application->id }}" value="Role" />
+                                    <x-text-input id="position_title_{{ $application->id }}" name="position_title" value="{{ $application->position_title }}" class="mt-1 block w-full" />
+                                </div>
+                                <div>
+                                    <x-input-label for="status_{{ $application->id }}" value="Status" />
+                                    <select id="status_{{ $application->id }}" name="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                                        @foreach ($statuses as $status)
+                                            <option value="{{ $status }}" @selected($application->status === $status)>{{ $status }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
 
-                            <div class="md:col-span-2">
-                                <x-input-label for="status" value="Status" />
-                                <select id="status" name="status" class="mt-1 block w-full px-3 py-2 rounded-md shadow-sm border border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-indigo-500 dark:!border-gray-700 dark:!bg-gray-900 dark:!text-gray-100" required>
-                                    @foreach ($statuses as $status)
-                                        <option value="{{ $status }}" @selected(old('status', 'Interested') === $status)>{{ $status }}</option>
-                                    @endforeach
-                                </select>
-                                @error('status')<div class="text-sm text-red-600 mt-1">{{ $message }}</div>@enderror
-                            </div>
+                                <div>
+                                    <x-input-label for="location_{{ $application->id }}" value="Location" />
+                                    <x-text-input id="location_{{ $application->id }}" name="location" value="{{ $application->location }}" class="mt-1 block w-full" />
+                                </div>
+                                <div>
+                                    <x-input-label for="applied_on_{{ $application->id }}" value="Applied on" />
+                                    <x-text-input id="applied_on_{{ $application->id }}" type="date" name="applied_on" value="{{ $application->applied_on?->format('Y-m-d') }}" class="mt-1 block w-full" />
+                                </div>
+                                <div>
+                                    <x-input-label for="last_contacted_on_{{ $application->id }}" value="Last contacted" />
+                                    <x-text-input id="last_contacted_on_{{ $application->id }}" type="date" name="last_contacted_on" value="{{ $application->last_contacted_on?->format('Y-m-d') }}" class="mt-1 block w-full" />
+                                </div>
+                                <div>
+                                    <x-input-label for="next_followup_on_{{ $application->id }}" value="Next follow-up" />
+                                    <x-text-input id="next_followup_on_{{ $application->id }}" type="date" name="next_followup_on" value="{{ $application->next_followup_on?->format('Y-m-d') }}" class="mt-1 block w-full" />
+                                </div>
+                                <div>
+                                    <x-input-label for="job_url_{{ $application->id }}" value="Job posting URL" />
+                                    <x-text-input id="job_url_{{ $application->id }}" type="url" name="job_url" value="{{ $application->job_url }}" class="mt-1 block w-full" />
+                                </div>
+                                <div>
+                                    <x-input-label for="offer_letter_{{ $application->id }}" value="Replace offer letter (PDF)" />
+                                    <input id="offer_letter_{{ $application->id }}" type="file" name="offer_letter" accept="application/pdf" class="mt-1 block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm" />
+                                </div>
 
-                            <div class="md:col-span-2">
-                                <x-input-label for="location" value="Location" />
-                                <x-text-input id="location" name="location" value="{{ old('location') }}" class="mt-1" />
-                                @error('location')<div class="text-sm text-red-600 mt-1">{{ $message }}</div>@enderror
-                            </div>
+                                <div>
+                                    <x-input-label for="contact_name_{{ $application->id }}" value="Contact person" />
+                                    <x-text-input id="contact_name_{{ $application->id }}" name="contact_name" value="{{ $application->contact_name }}" class="mt-1 block w-full" />
+                                </div>
+                                <div>
+                                    <x-input-label for="contact_email_{{ $application->id }}" value="Contact email" />
+                                    <x-text-input id="contact_email_{{ $application->id }}" type="email" name="contact_email" value="{{ $application->contact_email }}" class="mt-1 block w-full" />
+                                </div>
+                                <div>
+                                    <x-input-label for="contact_phone_{{ $application->id }}" value="Contact phone" />
+                                    <x-text-input id="contact_phone_{{ $application->id }}" name="contact_phone" value="{{ $application->contact_phone }}" class="mt-1 block w-full" />
+                                </div>
 
-                            <div class="md:col-span-2">
-                                <x-input-label for="applied_on" value="Applied on" />
-                                <x-text-input id="applied_on" type="date" name="applied_on" value="{{ old('applied_on') }}" class="mt-1" />
-                                @error('applied_on')<div class="text-sm text-red-600 mt-1">{{ $message }}</div>@enderror
-                            </div>
-
-                            <div class="md:col-span-2">
-                                <x-input-label for="job_url" value="Job URL" />
-                                <x-text-input id="job_url" name="job_url" value="{{ old('job_url') }}" class="mt-1" />
-                                @error('job_url')<div class="text-sm text-red-600 mt-1">{{ $message }}</div>@enderror
-                            </div>
-
-                            <div class="md:col-span-6">
-                                <x-input-label for="notes" value="Notes" />
-                                <textarea id="notes" name="notes" rows="3" class="mt-1 block w-full px-3 py-2 rounded-md shadow-sm border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500 dark:!border-gray-700 dark:!bg-gray-900 dark:!text-gray-100 dark:placeholder-gray-400">{{ old('notes') }}</textarea>
-                                @error('notes')<div class="text-sm text-red-600 mt-1">{{ $message }}</div>@enderror
-                            </div>
-
-                            <div class="md:col-span-6">
-                                <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 dark:bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-800 uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-white">
-                                    Add
-                                </button>
+                                <div class="md:col-span-3">
+                                    <x-input-label for="notes_{{ $application->id }}" value="Notes" />
+                                    <textarea id="notes_{{ $application->id }}" name="notes" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">{{ $application->notes }}</textarea>
+                                </div>
                             </div>
                         </form>
+
+                        <div class="flex justify-end border-t border-slate-100 px-6 py-3">
+                            <form method="POST" action="{{ route('student.companies.destroy', $application) }}" onsubmit="return confirm('Delete this application?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-xs font-bold uppercase tracking-wider text-red-600 hover:text-red-800">Delete application</button>
+                            </form>
+                        </div>
                     </div>
-
-                    <div>
-                        <h3 class="text-lg font-semibold">Your applications</h3>
-
-                        @if ($applications->isEmpty())
-                            <p class="mt-3 text-sm text-gray-600 dark:text-gray-300">No entries yet.</p>
-                        @else
-                            <div class="mt-4 overflow-x-auto">
-                                <table class="min-w-full text-sm">
-                                    <thead>
-                                        <tr class="text-left text-gray-600 dark:text-gray-300">
-                                            <th class="py-2 pr-4">Company</th>
-                                            <th class="py-2 pr-4">Role</th>
-                                            <th class="py-2 pr-4">Status</th>
-                                            <th class="py-2 pr-4">Applied</th>
-                                            <th class="py-2 pr-4">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                                        @foreach ($applications as $app)
-                                            <tr>
-                                                <td class="py-3 pr-4 align-top">
-                                                    <div class="space-y-2">
-                                                        <x-text-input form="update-{{ $app->id }}" name="company_name" value="{{ $app->company_name }}" required />
-
-                                                        <x-text-input form="update-{{ $app->id }}" name="job_url" value="{{ $app->job_url }}" placeholder="Job URL" />
-
-                                                        <div class="text-xs text-gray-500 dark:text-gray-400 break-all">
-                                                            @if ($app->job_url)
-                                                                <a class="underline" href="{{ $app->job_url }}" target="_blank" rel="noopener">{{ $app->job_url }}</a>
-                                                            @endif
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="py-3 pr-4 align-top">
-                                                    <div class="space-y-2">
-                                                        <x-text-input form="update-{{ $app->id }}" name="position_title" value="{{ $app->position_title }}" />
-                                                        <x-text-input form="update-{{ $app->id }}" name="location" value="{{ $app->location }}" placeholder="Location" />
-                                                        <x-text-input form="update-{{ $app->id }}" name="notes" value="{{ $app->notes }}" placeholder="Notes" />
-                                                    </div>
-                                                </td>
-                                                <td class="py-3 pr-4 align-top">
-                                                    <select form="update-{{ $app->id }}" name="status" class="block w-full px-3 py-2 rounded-md shadow-sm border border-gray-300 bg-white text-gray-900 focus:border-indigo-500 focus:ring-indigo-500 dark:!border-gray-700 dark:!bg-gray-900 dark:!text-gray-100" required>
-                                                        @foreach ($statuses as $status)
-                                                            <option value="{{ $status }}" @selected($app->status === $status)>{{ $status }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </td>
-                                                <td class="py-3 pr-4 align-top">
-                                                    <x-text-input form="update-{{ $app->id }}" type="date" name="applied_on" value="{{ optional($app->applied_on)->format('Y-m-d') }}" />
-                                                    <input form="update-{{ $app->id }}" type="hidden" name="last_contacted_on" value="{{ optional($app->last_contacted_on)->format('Y-m-d') }}" />
-                                                    <input form="update-{{ $app->id }}" type="hidden" name="next_followup_on" value="{{ optional($app->next_followup_on)->format('Y-m-d') }}" />
-                                                </td>
-                                                <td class="py-3 pr-4 align-top">
-                                                    <div class="flex items-center gap-3">
-                                                        <form id="update-{{ $app->id }}" method="POST" action="{{ route('student.company-tracker.update', $app) }}">
-                                                            @csrf
-                                                            @method('PUT')
-                                                        </form>
-
-                                                        <button form="update-{{ $app->id }}" type="submit" class="px-3 py-2 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 rounded-md text-xs font-semibold uppercase">Save</button>
-                                                    </div>
-
-                                                    <form method="POST" action="{{ route('student.company-tracker.destroy', $app) }}" class="mt-2" onsubmit="return confirm('Delete this entry?')">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="text-red-600 dark:text-red-400 text-xs font-semibold uppercase">Delete</button>
-                                                    </form>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        @endif
+                @empty
+                    <div class="rounded-xl border border-dashed border-slate-300 bg-white p-12 text-center">
+                        <p class="font-semibold text-slate-700">No applications yet</p>
+                        <p class="mt-1 text-sm text-slate-500">Add your first company using the form above.</p>
                     </div>
-                </div>
+                @endforelse
             </div>
         </div>
     </div>

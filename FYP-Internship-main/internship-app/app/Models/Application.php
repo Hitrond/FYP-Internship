@@ -13,11 +13,15 @@ class Application extends Model
         'company_name',
         'position_title',
         'location',
+        'contact_name',
+        'contact_email',
+        'contact_phone',
         'status',
         'applied_on',
         'last_contacted_on',
         'next_followup_on',
         'job_url',
+        'offer_letter_path',
         'notes',
     ];
 

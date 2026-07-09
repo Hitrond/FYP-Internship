@@ -1,158 +1,175 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <div class="flex">
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ Auth::user()->isAdmin() ? route('admin.users.index') : (Auth::user()->isSupervisor() ? route('supervisor.dashboard') : route('dashboard')) }}" class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-md">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                        </div>
-                        <span class="font-bold text-lg tracking-tight text-slate-800">InternTrack</span>
-                    </a>
-                </div>
+@php
+    $user = Auth::user();
+    $homeRoute = $user->isAdmin()
+        ? route('admin.dashboard')
+        : ($user->isSupervisor()
+            ? route('supervisor.dashboard')
+            : ($user->isMentor() ? route('mentor.dashboard') : route('dashboard')));
+    $roleLabel = match ($user->role) {
+        'admin' => 'Administrator',
+        'mentor' => 'Academic Mentor',
+        'supervisor' => 'Industrial Supervisor',
+        default => 'Student',
+    };
+    $initials = collect(explode(' ', $user->name))
+        ->filter()
+        ->take(2)
+        ->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))
+        ->implode('');
+    $unreadNotificationCount = $user->unreadNotifications()->count();
+@endphp
 
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    @if(Auth::user()->isAdmin())
-                        <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
-                            {{ __('User Management') }}
-                        </x-nav-link>
-                    @elseif(Auth::user()->isSupervisor())
-                        <x-nav-link :href="route('supervisor.dashboard')" :active="request()->routeIs('supervisor.*')">
-                            {{ __('Supervisor Dashboard') }}
-                        </x-nav-link>
-                    @elseif(Auth::user()->isMentor())
-                        <x-nav-link :href="route('mentor.dashboard')" :active="request()->routeIs('mentor.dashboard')">
-                            {{ __('Mentor Dashboard') }}
-                        </x-nav-link>
-                    @elseif(Auth::user()->isStudent())
-                        <x-nav-link :href="route('student.clearance.create')" :active="request()->routeIs('student.clearance.*')">
-                            {{ __('Placement Submission') }}
-                        </x-nav-link>
-                        <x-nav-link :href="route('student.company-tracker.index')" :active="request()->routeIs('student.company-tracker.*')">
-                            {{ __('Company Tracker') }}
-                        </x-nav-link>
-                        <x-nav-link :href="route('student.resume.builder')" :active="request()->routeIs('student.resume.*')">
-                            {{ __('Resume Builder') }}
-                        </x-nav-link>
-                        <x-nav-link :href="route('student.cover-letter.create')" :active="request()->routeIs('student.cover-letter.*')">
-                            {{ __('Cover Letter') }}
-                        </x-nav-link>
-                    @else
-                        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                            {{ __('Dashboard') }}
-                        </x-nav-link>
+<nav x-data="{ open: false }" class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-xl">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex h-[72px] items-center justify-between gap-5">
+            <div class="flex min-w-0 items-center gap-7">
+                <a href="{{ $homeRoute }}" class="flex shrink-0 items-center gap-3" aria-label="InternTrack dashboard">
+                    <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#17233f] shadow-lg shadow-slate-900/10">
+                        <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2m-9 4h14M5 7h14a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2z"/>
+                        </svg>
+                    </span>
+                    <span class="hidden sm:block">
+                        <span class="block text-base font-bold tracking-tight text-slate-900">InternTrack</span>
+                        <span class="block text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">{{ $roleLabel }}</span>
+                    </span>
+                </a>
+
+                <div class="hidden items-center gap-1 xl:flex">
+                    @if($user->isAdmin())
+                        <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">Dashboard</x-nav-link>
+                        <x-nav-link :href="route('admin.semesters.index')" :active="request()->routeIs('admin.semesters.*')">Semesters</x-nav-link>
+                        <x-nav-link :href="route('admin.evaluation-forms.index')" :active="request()->routeIs('admin.evaluation-forms.*')">Evaluation Forms</x-nav-link>
+                        <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">Users</x-nav-link>
+                        <x-nav-link :href="route('admin.clearances.index')" :active="request()->routeIs('admin.clearances.*')">Admin Clearance</x-nav-link>
+                    @elseif($user->isSupervisor())
+                        <x-nav-link :href="route('supervisor.dashboard')" :active="request()->routeIs('supervisor.dashboard')">Dashboard</x-nav-link>
+                        <x-nav-link :href="route('supervisor.logbooks.index')" :active="request()->routeIs('supervisor.logbooks.*')">Logbooks</x-nav-link>
+                        <x-nav-link :href="route('supervisor.evaluations.index')" :active="request()->routeIs('supervisor.evaluations.*')">Evaluations</x-nav-link>
+                        <x-nav-link :href="route('supervisor.final-clearances.index')" :active="request()->routeIs('supervisor.final-clearances.*')">Final Clearance</x-nav-link>
+                    @elseif($user->isMentor())
+                        <x-nav-link :href="route('mentor.dashboard')" :active="request()->routeIs('mentor.dashboard')">Dashboard</x-nav-link>
+                        <x-nav-link :href="route('mentor.clearances.index')" :active="request()->routeIs('mentor.clearances.*')">Placements</x-nav-link>
+                        <x-nav-link :href="route('mentor.evaluations.index')" :active="request()->routeIs('mentor.evaluations.*')">Evaluations</x-nav-link>
+                        <x-nav-link :href="route('mentor.final-clearances.index')" :active="request()->routeIs('mentor.final-clearances.*')">Final Clearance</x-nav-link>
+                    @elseif($user->isStudent())
+                        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">Dashboard</x-nav-link>
+                        <x-nav-link :href="route('student.companies.index')" :active="request()->routeIs('student.companies.*', 'student.company-tracker.*')">Companies</x-nav-link>
+                        <x-nav-link :href="route('student.resume.builder')" :active="request()->routeIs('student.resume.*')">Resume</x-nav-link>
+                        <x-nav-link :href="route('student.cover-letter.create')" :active="request()->routeIs('student.cover-letter.*')">Cover Letter</x-nav-link>
+                        <x-nav-link :href="route('student.logbook.index')" :active="request()->routeIs('student.logbook.*')">Logbooks</x-nav-link>
+                        <x-nav-link :href="route('student.clearance.create')" :active="request()->routeIs('student.clearance.*')">Clearance</x-nav-link>
+                        <x-nav-link :href="route('student.evaluations.index')" :active="request()->routeIs('student.evaluations.*')">Evaluations</x-nav-link>
                     @endif
                 </div>
             </div>
 
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <x-dropdown align="right" width="48">
+            <div class="hidden shrink-0 items-center gap-3 xl:flex">
+                <a href="{{ route('notifications.index') }}" class="relative flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700" aria-label="Notifications">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 00-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5m6 0a3 3 0 01-6 0h6z"/></svg>
+                    @if ($unreadNotificationCount > 0)
+                        <span class="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-bold text-white">{{ min(99, $unreadNotificationCount) }}</span>
+                    @endif
+                </a>
+                <x-dropdown align="right" width="64" contentClasses="py-2 bg-white">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                            <div>{{ Auth::user()->name }}</div>
-
-                            <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
+                        <button class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white py-2 pl-2 pr-3 text-left transition hover:border-indigo-200 hover:bg-indigo-50/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-xs font-bold text-indigo-700">{{ $initials }}</span>
+                            <span class="max-w-[150px]">
+                                <span class="block truncate text-sm font-bold text-slate-800">{{ $user->name }}</span>
+                                <span class="block truncate text-[11px] text-slate-500">{{ $roleLabel }}</span>
+                            </span>
+                            <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9l6 6 6-6"/></svg>
                         </button>
                     </x-slot>
 
                     <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Account') }}
-                        </x-dropdown-link>
-
-                        @if(Auth::user()->isStudent())
-                            <x-dropdown-link :href="route('student.profile.edit')">
-                                {{ __('Student Profile') }}
-                            </x-dropdown-link>
-                        @endif
-
-                        <form method="POST" action="{{ route('logout') }}">
+                        <div class="border-b border-slate-100 px-4 pb-3 pt-1">
+                            <p class="truncate text-sm font-bold text-slate-900">{{ $user->name }}</p>
+                            <p class="mt-1 truncate text-xs text-slate-500">{{ $user->email }}</p>
+                        </div>
+                        <div class="py-1">
+                            <x-dropdown-link :href="route('profile.edit')">Account settings</x-dropdown-link>
+                            @if($user->isStudent())
+                                <x-dropdown-link :href="route('student.profile.edit')">Student profile</x-dropdown-link>
+                            @elseif($user->isSupervisor())
+                                <x-dropdown-link :href="route('supervisor.profile.edit')">Supervisor profile</x-dropdown-link>
+                            @elseif($user->isMentor())
+                                <x-dropdown-link :href="route('mentor.profile.edit')">Academic Mentor profile</x-dropdown-link>
+                            @endif
+                        </div>
+                        <form method="POST" action="{{ route('logout') }}" class="border-t border-slate-100 pt-1">
                             @csrf
-
-                            <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                                {{ __('Log Out') }}
-                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('logout')" onclick="event.preventDefault(); this.closest('form').submit();">Log out</x-dropdown-link>
                         </form>
                     </x-slot>
                 </x-dropdown>
             </div>
 
-            <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
-                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+            <div class="flex items-center gap-2 xl:hidden">
+                <a href="{{ route('notifications.index') }}" class="relative flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 text-slate-600" aria-label="Notifications">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 00-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5m6 0a3 3 0 01-6 0h6z"/></svg>
+                    @if ($unreadNotificationCount > 0)
+                        <span class="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-bold text-white">{{ min(99, $unreadNotificationCount) }}</span>
+                    @endif
+                </a>
+                <button @click="open = ! open" class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition hover:bg-slate-50" :aria-expanded="open.toString()" aria-label="Toggle navigation">
+                    <svg x-show="!open" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    <svg x-show="open" style="display: none" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
         </div>
     </div>
 
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
-            @if(Auth::user()->isAdmin())
-                <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
-                    {{ __('User Management') }}
-                </x-responsive-nav-link>
-            @elseif(Auth::user()->isSupervisor())
-                <x-responsive-nav-link :href="route('supervisor.dashboard')" :active="request()->routeIs('supervisor.*')">
-                    {{ __('Supervisor Dashboard') }}
-                </x-responsive-nav-link>
-            @elseif(Auth::user()->isMentor())
-                <x-responsive-nav-link :href="route('mentor.dashboard')" :active="request()->routeIs('mentor.dashboard')">
-                    {{ __('Mentor Dashboard') }}
-                </x-responsive-nav-link>
-            @elseif(Auth::user()->isStudent())
-                <x-responsive-nav-link :href="route('student.clearance.create')" :active="request()->routeIs('student.clearance.*')">
-                    {{ __('Placement Submission') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('student.company-tracker.index')" :active="request()->routeIs('student.company-tracker.*')">
-                    {{ __('Company Tracker') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('student.resume.builder')" :active="request()->routeIs('student.resume.*')">
-                    {{ __('Resume Builder') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('student.cover-letter.create')" :active="request()->routeIs('student.cover-letter.*')">
-                    {{ __('Cover Letter') }}
-                </x-responsive-nav-link>
-            @else
-                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                    {{ __('Dashboard') }}
-                </x-responsive-nav-link>
+    <div x-show="open" x-transition class="border-t border-slate-200 bg-white xl:hidden" style="display: none">
+        <div class="mx-auto max-w-7xl space-y-1 px-4 py-4 sm:px-6 lg:px-8">
+            @if($user->isAdmin())
+                <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">Dashboard</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.semesters.index')" :active="request()->routeIs('admin.semesters.*')">Semesters</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.evaluation-forms.index')" :active="request()->routeIs('admin.evaluation-forms.*')">Evaluation Forms</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">Users</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.clearances.index')" :active="request()->routeIs('admin.clearances.*')">Admin Clearance</x-responsive-nav-link>
+            @elseif($user->isSupervisor())
+                <x-responsive-nav-link :href="route('supervisor.dashboard')" :active="request()->routeIs('supervisor.dashboard')">Dashboard</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('supervisor.logbooks.index')" :active="request()->routeIs('supervisor.logbooks.*')">Logbooks</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('supervisor.evaluations.index')" :active="request()->routeIs('supervisor.evaluations.*')">Evaluations</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('supervisor.final-clearances.index')" :active="request()->routeIs('supervisor.final-clearances.*')">Final Clearance</x-responsive-nav-link>
+            @elseif($user->isMentor())
+                <x-responsive-nav-link :href="route('mentor.dashboard')" :active="request()->routeIs('mentor.dashboard')">Dashboard</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('mentor.clearances.index')" :active="request()->routeIs('mentor.clearances.*')">Placements</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('mentor.evaluations.index')" :active="request()->routeIs('mentor.evaluations.*')">Evaluations</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('mentor.final-clearances.index')" :active="request()->routeIs('mentor.final-clearances.*')">Final Clearance</x-responsive-nav-link>
+            @elseif($user->isStudent())
+                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">Dashboard</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('student.companies.index')" :active="request()->routeIs('student.companies.*', 'student.company-tracker.*')">Companies</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('student.resume.builder')" :active="request()->routeIs('student.resume.*')">Resume Builder</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('student.cover-letter.create')" :active="request()->routeIs('student.cover-letter.*')">Cover Letter</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('student.logbook.index')" :active="request()->routeIs('student.logbook.*')">Logbooks</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('student.clearance.create')" :active="request()->routeIs('student.clearance.*')">Clearance Hub</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('student.evaluations.index')" :active="request()->routeIs('student.evaluations.*')">Evaluations</x-responsive-nav-link>
             @endif
         </div>
 
-        <div class="pt-4 pb-1 border-t border-gray-200">
-            <div class="px-4">
-                <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
+        <div class="border-t border-slate-200 bg-slate-50 px-4 py-4 sm:px-6 lg:px-8">
+            <div class="flex items-center gap-3">
+                <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-xs font-bold text-indigo-700">{{ $initials }}</span>
+                <div class="min-w-0">
+                    <p class="truncate text-sm font-bold text-slate-900">{{ $user->name }}</p>
+                    <p class="truncate text-xs text-slate-500">{{ $user->email }}</p>
+                </div>
             </div>
-
-            <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Account') }}
-                </x-responsive-nav-link>
-
-                @if(Auth::user()->isStudent())
-                    <x-responsive-nav-link :href="route('student.profile.edit')">
-                        {{ __('Student Profile') }}
-                    </x-responsive-nav-link>
+            <div class="mt-3 grid gap-1 sm:grid-cols-2">
+                <x-responsive-nav-link :href="route('profile.edit')">Account settings</x-responsive-nav-link>
+                @if($user->isStudent())
+                    <x-responsive-nav-link :href="route('student.profile.edit')">Student profile</x-responsive-nav-link>
+                @elseif($user->isSupervisor())
+                    <x-responsive-nav-link :href="route('supervisor.profile.edit')">Supervisor profile</x-responsive-nav-link>
+                @elseif($user->isMentor())
+                    <x-responsive-nav-link :href="route('mentor.profile.edit')">Academic Mentor profile</x-responsive-nav-link>
                 @endif
-
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-
-                    <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
-                                        this.closest('form').submit();">
-                        {{ __('Log Out') }}
-                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('logout')" onclick="event.preventDefault(); this.closest('form').submit();">Log out</x-responsive-nav-link>
                 </form>
             </div>
         </div>

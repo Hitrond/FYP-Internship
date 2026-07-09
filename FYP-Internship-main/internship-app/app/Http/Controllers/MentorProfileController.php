@@ -26,13 +26,10 @@ class MentorProfileController extends Controller
         $validated['notify_email_missed_logbook'] = $request->boolean('notify_email_missed_logbook');
         $validated['notify_dashboard_only'] = $request->boolean('notify_dashboard_only');
 
-        $user = $request->user();
-
-        if ($user->profile) {
-            $user->profile->update($validated);
-        } else {
-            $user->profile()->create($validated);
-        }
+        $request->user()->profile()->updateOrCreate(
+            ['user_id' => $request->user()->id],
+            $validated
+        );
 
         return redirect()->route('mentor.profile.edit')->with('status', 'profile-updated');
     }
