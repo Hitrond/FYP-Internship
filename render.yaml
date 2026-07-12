@@ -9,6 +9,7 @@ services:
     name: wims-sus
     runtime: docker
     plan: free
+    rootDir: FYP-Internship-main/internship-app
     dockerfilePath: ./Dockerfile
     healthCheckPath: /up
     envVars:
