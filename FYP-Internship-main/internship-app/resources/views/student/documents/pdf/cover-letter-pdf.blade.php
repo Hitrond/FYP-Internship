@@ -9,7 +9,9 @@
             font-size: 11pt;
             line-height: 1.6;
             color: #333333;
-            margin: 40px;
+            /* Page margins are controlled by mPDF (18 mm left/right and
+               15 mm top/bottom). A body margin here doubled that spacing. */
+            margin: 0;
         }
         .header {
             border-bottom: 2px solid #e2e8f0;

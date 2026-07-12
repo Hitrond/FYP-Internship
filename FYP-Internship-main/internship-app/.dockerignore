@@ -1,4 +1,12 @@
-*
-!Dockerfile
-!composer.json
-!composer.lock
+.git
+.env
+node_modules
+vendor
+public/storage
+bootstrap/cache/*.php
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+tmp
+tests

@@ -178,4 +178,25 @@ class StudentDocumentLibraryTest extends TestCase
             ->get('/student/documents/cover-letter')
             ->assertRedirect(route('student.cover-letter.create'));
     }
+
+    public function test_student_can_explicitly_save_a_cover_letter_draft(): void
+    {
+        $student = User::factory()->create(['role' => 'student']);
+
+        $this->actingAs($student)
+            ->post(route('student.cover-letter.store'), [
+                'company_name' => 'SUS Test Company',
+                'hiring_manager' => 'Hiring Manager',
+                'role' => 'Software Engineering Intern',
+                'body_text' => 'This is simulated cover letter content for usability testing.',
+            ])
+            ->assertRedirect(route('student.cover-letter.create'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('cover_letters', [
+            'user_id' => $student->id,
+            'company_name' => 'SUS Test Company',
+            'role' => 'Software Engineering Intern',
+        ]);
+    }
 }

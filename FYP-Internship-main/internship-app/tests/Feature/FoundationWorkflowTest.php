@@ -381,6 +381,15 @@ class FoundationWorkflowTest extends TestCase
             ->get(route('student.cover-letter.download'))
             ->assertOk()
             ->assertHeader('Content-Type', 'application/pdf');
+
+        $word = $this->actingAs($student)
+            ->get(route('student.cover-letter.download-doc'))
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/msword')
+            ->assertDownload();
+
+        $this->assertStringStartsWith('{\\rtf1', $word->getContent());
+        $this->assertStringNotContainsString('<html', $word->getContent());
     }
 
     private function createLogbook(User $student, array $overrides = []): Logbook

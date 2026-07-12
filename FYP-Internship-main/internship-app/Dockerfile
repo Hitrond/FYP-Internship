@@ -1,3 +1,11 @@
+FROM node:22-alpine AS node-assets
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY resources ./resources
+COPY vite.config.js tailwind.config.js postcss.config.js ./
+RUN npm run build
+
 FROM laravelsail/php84-composer:latest
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
@@ -30,3 +38,14 @@ RUN composer install \
         storage/framework/views
 
 RUN sha256sum composer.lock | cut -d ' ' -f 1 > vendor/.composer-lock.sha256
+
+COPY . .
+
+RUN rm -f bootstrap/cache/*.php \
+    && composer dump-autoload --optimize \
+    && chmod +x docker/render-start.sh \
+    && chown -R www-data:www-data storage bootstrap/cache
+
+COPY --from=node-assets /app/public/build ./public/build
+
+CMD ["/bin/sh", "docker/render-start.sh"]

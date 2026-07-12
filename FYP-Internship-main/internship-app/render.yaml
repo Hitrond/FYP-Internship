@@ -1,0 +1,50 @@
+databases:
+  - name: wims-sus-db
+    plan: free
+    databaseName: wims_sus
+    user: wims_sus
+
+services:
+  - type: web
+    name: wims-sus
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /up
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: wims-sus-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: wims-sus-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: wims-sus-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: wims-sus-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: wims-sus-db
+          property: password
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: MAIL_MAILER
+        value: log

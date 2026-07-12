@@ -2,6 +2,7 @@
 
 use App\Models\Logbook;
 use App\Models\PlacementClearance;
+use App\Models\User;
 use App\Services\PlacementTimelineService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -10,6 +11,19 @@ use Illuminate\Support\Facades\Schedule;
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
+Artisan::command('sus:seed-if-empty', function () {
+    if (User::where('email', 'adam@gmail.com')->exists()) {
+        $this->info('SUS data already exists; leaving participant changes intact.');
+
+        return self::SUCCESS;
+    }
+
+    Artisan::call('db:seed', ['--class' => 'SusUsabilitySeeder', '--force' => true]);
+    $this->info('Initial SUS usability data created.');
+
+    return self::SUCCESS;
+})->purpose('Seed the temporary SUS environment once without resetting participant work');
 
 Artisan::command('logbooks:sync-timeline', function (PlacementTimelineService $timeline) {
     Logbook::where('timeline_generated', true)

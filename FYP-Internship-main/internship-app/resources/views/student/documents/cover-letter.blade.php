@@ -56,6 +56,9 @@
             @if (session('error'))
                 <div class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-800">{{ session('error') }}</div>
             @endif
+            @if (session('success'))
+                <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-medium text-emerald-800">{{ session('success') }}</div>
+            @endif
 
             @include('student.documents.partials.profile-readiness', ['readiness' => $readiness])
 
@@ -75,7 +78,8 @@
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
                     <h2 class="text-lg font-bold text-white mb-6 border-b border-slate-800 pb-3">Letter Details</h2>
 
-                    <form id="cover-letter-form" class="space-y-5">
+                    <form id="cover-letter-form" action="{{ route('student.cover-letter.store') }}" method="POST" class="space-y-5">
+                        @csrf
                         <div>
                             <label class="block text-sm font-medium text-slate-400 mb-1">Company Name</label>
                             <input id="input-company" name="company_name" type="text" value="{{ old('company_name', $draft?->company_name) }}" placeholder="e.g. TechCorp Malaysia" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:border-indigo-500 focus:ring-1 outline-none transition-all">
@@ -118,6 +122,10 @@
                             <label class="block text-sm font-medium text-slate-400 mb-1">Letter Body</label>
                             <textarea id="input-body" name="body_text" rows="12" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white focus:border-indigo-500 focus:ring-1 outline-none transition-all resize-y font-mono text-sm" placeholder="Write your cover letter content here...">{{ old('body_text', $draft?->body_text) }}</textarea>
                         </div>
+
+                        <button type="submit" class="w-full rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-indigo-500">
+                            Save Draft
+                        </button>
                     </form>
                 </div>
             </div>
@@ -284,21 +292,6 @@ I would welcome the opportunity to discuss how my design background aligns with 
 
                 updatePreview();
                 scheduleSave();
-            });
-
-            const downloadForms = document.querySelectorAll('.download-cover-letter');
-            downloadForms.forEach((downloadForm) => {
-                downloadForm.addEventListener('submit', async (event) => {
-                    event.preventDefault();
-
-                    try {
-                        await saveDraft();
-                        event.currentTarget.submit();
-                    } catch (error) {
-                        console.error(error);
-                        alert('Your draft could not be saved. Please try again.');
-                    }
-                });
             });
 
             updatePreview();
