@@ -458,4 +458,18 @@ class FoundationWorkflowTest extends TestCase
             ],
         ];
     }
+
+    public function test_render_forwarded_https_generates_secure_asset_and_login_urls(): void
+    {
+        $this->withHeaders([
+            'Host' => 'wims-sus.onrender.com',
+            'X-Forwarded-Host' => 'wims-sus.onrender.com',
+            'X-Forwarded-Port' => '443',
+            'X-Forwarded-Proto' => 'https',
+        ])->get('/')
+            ->assertOk()
+            ->assertSee('https://wims-sus.onrender.com/build/assets/', false)
+            ->assertSee('https://wims-sus.onrender.com/login', false)
+            ->assertDontSee('http://wims-sus.onrender.com/build/assets/', false);
+    }
 }

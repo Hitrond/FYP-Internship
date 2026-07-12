@@ -1,8 +1,13 @@
 <?php
 
+use App\Http\Middleware\EnsureUserIsAdmin;
+use App\Http\Middleware\EnsureUserIsMentor;
+use App\Http\Middleware\EnsureUserIsStudent;
+use App\Http\Middleware\EnsureUserIsSupervisor;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -11,11 +16,23 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Render terminates HTTPS at its proxy and forwards requests to the
+        // container over HTTP. Trust its forwarding headers so Laravel emits
+        // HTTPS asset, form, and redirect URLs instead of mixed-content URLs.
+        $middleware->trustProxies(
+            at: '*',
+            headers: Request::HEADER_X_FORWARDED_FOR
+                | Request::HEADER_X_FORWARDED_HOST
+                | Request::HEADER_X_FORWARDED_PORT
+                | Request::HEADER_X_FORWARDED_PROTO
+                | Request::HEADER_X_FORWARDED_PREFIX
+        );
+
         $middleware->alias([
-            'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
-            'supervisor' => \App\Http\Middleware\EnsureUserIsSupervisor::class,
-            'mentor' => \App\Http\Middleware\EnsureUserIsMentor::class,
-            'student' => \App\Http\Middleware\EnsureUserIsStudent::class,
+            'admin' => EnsureUserIsAdmin::class,
+            'supervisor' => EnsureUserIsSupervisor::class,
+            'mentor' => EnsureUserIsMentor::class,
+            'student' => EnsureUserIsStudent::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
