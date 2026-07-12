@@ -35,6 +35,13 @@ class SusUsabilitySeeder extends Seeder
         'james@crs.com',
     ];
 
+    private const CORE_USERS = [
+        'admin@admin.com' => ['System Administrator', 'admin'],
+        'dhayanandahnaidu@gmail.com' => ['Dhaya', 'student'],
+        'james@crs.com' => ['James', 'mentor'],
+        'gobi@gmail.com' => ['Gobi', 'supervisor'],
+    ];
+
     private const OLD_DEMO_EMAILS = [
         'sarah.mentor@crs.com',
         'haris@gmail.com',
@@ -94,7 +101,7 @@ class SusUsabilitySeeder extends Seeder
     private function seedUsers(): array
     {
         $users = [];
-        foreach (self::SUS_USERS as $email => [$name, $role]) {
+        foreach (array_merge(self::CORE_USERS, self::SUS_USERS) as $email => [$name, $role]) {
             $users[$email] = User::updateOrCreate(
                 ['email' => $email],
                 ['name' => $name, 'role' => $role, 'password' => Hash::make(self::PASSWORD)]

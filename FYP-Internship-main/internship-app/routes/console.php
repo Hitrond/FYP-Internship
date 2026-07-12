@@ -13,7 +13,13 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Artisan::command('sus:seed-if-empty', function () {
-    if (User::where('email', 'adam@gmail.com')->exists()) {
+    if (
+        User::where('email', 'adam@gmail.com')->exists()
+        && User::where('email', 'dhayanandahnaidu@gmail.com')->exists()
+        && User::where('email', 'gobi@gmail.com')->exists()
+        && User::where('email', 'james@crs.com')->exists()
+        && User::where('email', 'admin@admin.com')->exists()
+    ) {
         $this->info('SUS data already exists; leaving participant changes intact.');
 
         return self::SUCCESS;
