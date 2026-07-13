@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between gap-4">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <p class="text-sm font-semibold uppercase tracking-[0.16em] text-indigo-600">Company workspace</p>
                 <h2 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">
@@ -87,7 +87,7 @@
 
                 <div x-show="showView" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity">
                     <div @click.away="showView = false" class="mx-4 max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-2xl">
-                        <div class="flex justify-between items-center mb-4">
+                        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <h3 class="text-xl font-bold text-slate-900">Logbook Details: Week {{ $logbook->week_number }}</h3>
                             <button @click="showView = false" class="text-2xl text-slate-400 hover:text-slate-700">&times;</button>
                         </div>
@@ -158,7 +158,7 @@
 </form>
 
 @if($logbook->evidence_file_path)
-    <div class="mt-4 flex items-center justify-between rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+    <div class="mt-4 flex flex-col gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-4 sm:flex-row sm:items-center sm:justify-between">
         <span class="text-sm font-medium text-indigo-800">Evidence file attached</span>
         <a href="{{ route('logbooks.evidence', $logbook) }}"
            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition">

@@ -131,7 +131,7 @@
             </div>
 
             <div class="lg:col-span-8 flex justify-center items-start overflow-y-auto pb-10">
-                <div class="aspect-[1/1.414] bg-white text-black shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] w-full max-w-[800px] p-12 sm:p-16 flex flex-col rounded-sm">
+                <div class="aspect-[1/1.414] w-full max-w-[800px] rounded-sm bg-white p-5 text-black shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] sm:p-10 lg:p-16 flex flex-col">
 
                     <div class="border-b-2 border-slate-200 pb-6 mb-8">
                         <h1 class="text-3xl font-bold text-slate-900 tracking-tight">{{ $username }}</h1>

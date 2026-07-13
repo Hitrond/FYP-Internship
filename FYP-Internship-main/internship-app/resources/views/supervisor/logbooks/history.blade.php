@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="font-semibold text-2xl text-slate-800 leading-tight">Logbook History</h2>
                 <p class="text-sm text-slate-500">Previously approved and rejected submissions from your assigned students.</p>

@@ -1,11 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="font-semibold text-2xl text-slate-800 leading-tight">Week {{ $logbook->week_number }} Logbook</h2>
                 <p class="text-sm text-slate-500">{{ $logbook->start_date->format('M d, Y') }} - {{ $logbook->end_date->format('M d, Y') }}</p>
             </div>
-            <div class="flex gap-3">
+            <div class="flex flex-wrap gap-3">
                 <a href="{{ route('student.logbook.index') }}" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-300 transition-colors">Back</a>
                 @if(in_array($logbook->status, ['pending', 'rejected'], true))
                     <a href="{{ route('student.logbook.edit', $logbook->id) }}" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold shadow-lg shadow-indigo-500/30 hover:bg-indigo-500 transition-colors">Edit Entry</a>
@@ -22,7 +22,7 @@
         @endif
         
         <!-- Status Banner -->
-        <div class="mb-6 p-4 rounded-xl border flex items-center justify-between 
+        <div class="mb-6 flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between
             @if($logbook->status === 'approved') bg-emerald-50 border-emerald-200 text-emerald-800
             @elseif($logbook->status === 'rejected') bg-red-50 border-red-200 text-red-800
             @else bg-amber-50 border-amber-200 text-amber-800 @endif">
@@ -115,7 +115,7 @@
             </div>
             
             @if($logbook->evidence_file_path)
-                <div class="bg-slate-50 p-6 border-t border-slate-200 flex justify-between items-center">
+                <div class="flex flex-col gap-4 border-t border-slate-200 bg-slate-50 p-6 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <p class="text-sm font-bold text-slate-700">Attached Evidence</p>
                         <p class="text-xs text-slate-500">A file was uploaded with this entry.</p>

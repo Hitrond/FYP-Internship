@@ -1,3 +1,62 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    html,
+    body {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    body,
+    main,
+    main > * {
+        min-width: 0;
+    }
+
+    img,
+    video,
+    canvas,
+    svg {
+        max-width: 100%;
+    }
+
+    input,
+    select,
+    textarea,
+    button {
+        max-width: 100%;
+    }
+}
+
+@layer components {
+    /* Protect every application page from long names, emails, and uploaded-file labels. */
+    main p,
+    main dd,
+    main td,
+    main a {
+        overflow-wrap: anywhere;
+    }
+
+    /* Tables keep their useful desktop columns and scroll inside the page on phones. */
+    @media (max-width: 767px) {
+        main table {
+            display: block;
+            max-width: 100%;
+            overflow-x: auto;
+            overscroll-behavior-inline: contain;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        main th,
+        main td {
+            white-space: nowrap;
+        }
+
+        main td p,
+        main td a {
+            white-space: normal;
+        }
+    }
+}

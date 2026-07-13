@@ -248,7 +248,7 @@ Task Tracker - REST API + React UI">{{ old('projects_summary', $user->profile->p
                             <h4 class="text-sm font-semibold text-slate-700 mb-4 uppercase tracking-wider">Add New Skill</h4>
                             <form method="POST" action="{{ route('student.skill.store') }}" class="space-y-4">
                                 @csrf
-                                <div class="grid grid-cols-3 gap-4">
+                                <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                                     <div class="col-span-2">
                                         <x-input-label for="name" :value="__('Skill Name')" />
                                         <x-text-input id="name" name="name" type="text" class="mt-1 block w-full shadow-sm" placeholder="e.g. PHP, Laravel, Figma" required />

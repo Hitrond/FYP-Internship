@@ -108,7 +108,7 @@
             </div>
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-slate-200">
-                <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between gap-3">
+                <div class="flex flex-col gap-3 border-b border-slate-100 px-5 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-8">
                     <h3 class="text-lg font-semibold text-slate-800">Live Preview</h3>
                 </div>
                 <div class="p-8">

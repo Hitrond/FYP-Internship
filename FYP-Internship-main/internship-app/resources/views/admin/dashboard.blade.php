@@ -36,7 +36,7 @@
                         <p class="mt-1 text-xs text-slate-500">Dashboard statistics and alerts are isolated to the selected cohort.</p>
                     </div>
                     <form method="GET" action="{{ route('admin.dashboard') }}" class="flex gap-2">
-                        <select name="semester" class="min-w-[240px] rounded-xl border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <select name="semester" class="w-full min-w-0 rounded-xl border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500 sm:w-auto sm:min-w-[240px]">
                             @foreach ($cycles as $cycle)
                                 <option value="{{ $cycle->id }}" @selected($selectedCycle?->id === $cycle->id)>{{ $cycle->name }} · {{ ucfirst($cycle->status) }}</option>
                             @endforeach
