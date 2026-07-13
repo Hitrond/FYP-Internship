@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Mail\SupervisorWelcomeMail;
 use App\Models\Application;
 use App\Models\Logbook;
 use App\Models\PerformanceEvaluation;
 use App\Models\PlacementClearance;
 use App\Models\User;
-use App\Mail\SupervisorWelcomeMail;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -116,6 +116,32 @@ class AcademicMentorWorkflowTest extends TestCase
         $this->actingAs($otherMentor)
             ->get(route('applications.offer-letter', $application))
             ->assertForbidden();
+    }
+
+    public function test_mentor_can_view_declared_and_verified_logbook_hours_without_daily_attendance(): void
+    {
+        [$student, $mentor] = $this->assignedStudent();
+        $logbook = Logbook::create([
+            'user_id' => $student->id,
+            'week_number' => 1,
+            'start_date' => now()->startOfWeek(),
+            'end_date' => now()->startOfWeek()->addDays(4),
+            'description' => 'Completed the assigned development work.',
+            'rendered_minutes' => 2400,
+            'verified_minutes' => 2280,
+            'attendance_entries' => null,
+            'attendance_remarks' => 'Two hours were excluded after verification.',
+            'status' => 'approved',
+        ]);
+
+        $this->actingAs($mentor)
+            ->get(route('logbooks.show', $logbook))
+            ->assertOk()
+            ->assertSee('Student declared:')
+            ->assertSee('40.00 hrs')
+            ->assertSee('Supervisor verified:')
+            ->assertSee('38.00 hrs')
+            ->assertSee('Two hours were excluded after verification.');
     }
 
     public function test_mentor_selects_locks_and_exports_final_result(): void

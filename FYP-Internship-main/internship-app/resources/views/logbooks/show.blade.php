@@ -31,17 +31,20 @@
                 <div class="whitespace-pre-wrap p-6 text-sm leading-relaxed text-slate-700">{{ $logbook->description }}</div>
             </div>
 
-            @if($logbook->attendance_entries)
-                <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-6">
-                        <h3 class="font-bold text-slate-900">Attendance</h3>
-                        <div class="text-sm text-slate-600">
-                            Declared: <strong>{{ number_format($logbook->rendered_hours, 2) }} hrs</strong>
-                            @if($logbook->verified_hours !== null)
-                                - Verified: <strong class="text-emerald-700">{{ number_format($logbook->verified_hours, 2) }} hrs</strong>
-                            @endif
-                        </div>
+            <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-6">
+                    <h3 class="font-bold text-slate-900">Attendance and working hours</h3>
+                    <div class="flex flex-wrap gap-3 text-sm">
+                        <span class="rounded-lg bg-indigo-50 px-3 py-2 text-indigo-800">
+                            Student declared: <strong>{{ number_format($logbook->rendered_hours, 2) }} hrs</strong>
+                        </span>
+                        <span class="rounded-lg bg-emerald-50 px-3 py-2 text-emerald-800">
+                            Supervisor verified:
+                            <strong>{{ $logbook->verified_hours !== null ? number_format($logbook->verified_hours, 2).' hrs' : 'Not verified' }}</strong>
+                        </span>
                     </div>
+                </div>
+                @if($logbook->attendance_entries)
                     <div class="overflow-x-auto p-6">
                         <table class="w-full text-left text-sm">
                             <thead class="border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500">
@@ -69,8 +72,15 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
-            @endif
+                @else
+                    <p class="p-6 text-sm text-slate-500">A daily attendance breakdown was not recorded for this entry. The total declared and verified hours remain available above.</p>
+                @endif
+                @if($logbook->attendance_remarks)
+                    <div class="border-t border-slate-100 bg-amber-50 px-6 py-4 text-sm text-amber-900">
+                        <strong>Supervisor hours note:</strong> {{ $logbook->attendance_remarks }}
+                    </div>
+                @endif
+            </div>
 
             <div class="grid gap-6 md:grid-cols-2">
                 <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
