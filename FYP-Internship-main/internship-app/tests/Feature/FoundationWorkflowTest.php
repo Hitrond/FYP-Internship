@@ -219,6 +219,16 @@ class FoundationWorkflowTest extends TestCase
 
         $response->assertSessionHasNoErrors();
         $logbook = Logbook::firstOrFail();
+        $response->assertRedirect(route('student.logbook.show', $logbook));
+
+        $this->actingAs($student)
+            ->get(route('student.logbook.show', $logbook))
+            ->assertOk()
+            ->assertSee('Status:')
+            ->assertSee('pending')
+            ->assertSee('Complete weekly tasks')
+            ->assertSee('Declared: 28.00 hours');
+
         $this->assertSame(1680, $logbook->rendered_minutes);
         $this->assertSame('medical_leave', $logbook->attendance_entries[1]['status']);
         $this->assertArrayNotHasKey('tasks', $logbook->attendance_entries[0]);

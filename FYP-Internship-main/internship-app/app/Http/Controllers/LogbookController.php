@@ -99,10 +99,10 @@ class LogbookController extends Controller
         if ($logbook) {
             $logbook->update($data);
         } else {
-            Auth::user()->logbooks()->create($data);
+            $logbook = Auth::user()->logbooks()->create($data);
         }
 
-        return redirect()->route('student.logbook.index')
+        return redirect()->route('student.logbook.show', $logbook)
             ->with('success', 'Week '.$validated['week_number'].' submitted for verification.');
     }
 
