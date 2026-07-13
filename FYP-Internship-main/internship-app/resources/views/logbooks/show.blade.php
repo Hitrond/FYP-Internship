@@ -24,12 +24,7 @@
                 </div>
             @endif
 
-            <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                <div class="border-b border-slate-100 p-6">
-                    <h3 class="font-bold text-slate-900">Weekly objectives, knowledge and skills</h3>
-                </div>
-                <div class="whitespace-pre-wrap p-6 text-sm leading-relaxed text-slate-700">{{ $logbook->description }}</div>
-            </div>
+            @include('logbooks.partials.content-sections', ['logbook' => $logbook])
 
             <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                 <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 p-6">

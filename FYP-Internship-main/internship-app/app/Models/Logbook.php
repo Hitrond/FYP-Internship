@@ -68,6 +68,26 @@ class Logbook extends Model
             : round($this->verified_minutes / 60, 2);
     }
 
+    public function objectivesText(): string
+    {
+        return $this->descriptionSections()[0];
+    }
+
+    public function contentSkillsText(): string
+    {
+        return $this->descriptionSections()[1];
+    }
+
+    private function descriptionSections(): array
+    {
+        $description = (string) $this->description;
+        $parts = explode("=== Content & Skills ===\n", $description, 2);
+        $objectives = trim(str_replace("=== Type(s) & Objective(s) ===\n", '', $parts[0] ?? ''));
+        $content = trim($parts[1] ?? '');
+
+        return [$objectives, $content];
+    }
+
     // A logbook belongs to a student
     public function user()
     {

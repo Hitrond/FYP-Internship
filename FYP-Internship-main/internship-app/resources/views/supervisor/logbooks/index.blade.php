@@ -94,10 +94,7 @@
 
 
 
-<p class="mb-2 text-xs font-bold uppercase tracking-wider text-indigo-600">Weekly objectives, knowledge and skills</p>
-<div class="max-h-[40vh] overflow-y-auto whitespace-pre-wrap rounded-xl border border-slate-200 bg-slate-50 p-5 text-sm leading-relaxed text-slate-700">
-    {{ $logbook->description }}
-</div>
+@include('logbooks.partials.content-sections', ['logbook' => $logbook])
 
 <div class="mt-4 overflow-hidden rounded-xl border border-slate-200">
     <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-50 px-4 py-3">

@@ -126,7 +126,7 @@ class AcademicMentorWorkflowTest extends TestCase
             'week_number' => 1,
             'start_date' => now()->startOfWeek(),
             'end_date' => now()->startOfWeek()->addDays(4),
-            'description' => 'Completed the assigned development work.',
+            'description' => "=== Type(s) & Objective(s) ===\nComplete the assigned development work.\n\n=== Content & Skills ===\nApplied Laravel and PostgreSQL skills.",
             'rendered_minutes' => 2400,
             'verified_minutes' => 2280,
             'attendance_entries' => null,
@@ -141,7 +141,11 @@ class AcademicMentorWorkflowTest extends TestCase
             ->assertSee('40.00 hrs')
             ->assertSee('Supervisor verified:')
             ->assertSee('38.00 hrs')
-            ->assertSee('Two hours were excluded after verification.');
+            ->assertSee('Two hours were excluded after verification.')
+            ->assertSee('Weekly objectives')
+            ->assertSee('Complete the assigned development work.')
+            ->assertSee('Content, activities and skills applied')
+            ->assertSee('Applied Laravel and PostgreSQL skills.');
     }
 
     public function test_mentor_selects_locks_and_exports_final_result(): void

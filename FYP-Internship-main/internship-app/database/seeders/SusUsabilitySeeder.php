@@ -303,6 +303,21 @@ class SusUsabilitySeeder extends Seeder
                 4 => ['open', null, null, 0],
             ],
         ];
+        $contentByStudentAndWeek = [
+            'adam@gmail.com' => [
+                1 => 'Built Laravel login validation, role-based redirects, and authentication tests using PHP and PostgreSQL.',
+                3 => 'Implemented dashboard cards and company-application CRUD screens using Laravel Blade, Eloquent, HTML, CSS, and JavaScript.',
+            ],
+            'aisha@gmail.com' => [
+                1 => 'Created REST-style routes, controllers, request validation, and API test cases for the application tracker.',
+                2 => 'Improved validation rules and corrected Eloquent relationships between students and company applications.',
+            ],
+            'daniel@gmail.com' => [
+                1 => 'Produced Figma wireframes and mapped the student submission and supervisor approval user journeys.',
+                2 => 'Built the weekly submission form, validation feedback, and evidence-upload handling.',
+                3 => 'Implemented the assigned-intern table, pending-review filters, and role-based dashboard queries.',
+            ],
+        ];
         $supervisorEmails = ['adam@gmail.com' => 'supervisor1@gmail.com', 'aisha@gmail.com' => 'supervisor2@gmail.com', 'daniel@gmail.com' => 'supervisor3@gmail.com'];
         foreach ($rows as $email => $weeks) {
             foreach ($weeks as $week => [$status, $description, $feedback, $hours]) {
@@ -312,11 +327,14 @@ class SusUsabilitySeeder extends Seeder
                 $reviewed = in_array($status, ['approved', 'rejected'], true);
                 $startDate = $due->copy()->subDays(6);
                 $renderedMinutes = $hours * 60;
+                $formattedDescription = $description
+                    ? "=== Type(s) & Objective(s) ===\n{$description}\n\n=== Content & Skills ===\n".($contentByStudentAndWeek[$email][$week] ?? '')
+                    : null;
                 Logbook::updateOrCreate(['user_id' => $u[$email]->id, 'week_number' => $week], [
                     'internship_cycle_id' => $cycle->id, 'timeline_generated' => true,
                     'start_date' => $startDate->toDateString(), 'end_date' => $due->toDateString(),
                     'submission_due_at' => $due, 'locked_at' => $status === 'overdue_locked' ? $due : null,
-                    'description' => $description, 'rendered_minutes' => $renderedMinutes,
+                    'description' => $formattedDescription, 'rendered_minutes' => $renderedMinutes,
                     'attendance_entries' => $description ? $this->attendanceEntries($startDate, $renderedMinutes) : null,
                     'status' => $status, 'supervisor_remarks' => $feedback,
                     'approved_by_id' => $reviewed ? $u[$supervisorEmails[$email]]->id : null,

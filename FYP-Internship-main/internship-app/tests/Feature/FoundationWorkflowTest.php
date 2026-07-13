@@ -59,6 +59,7 @@ class FoundationWorkflowTest extends TestCase
         $this->createLogbook($student, [
             'rendered_minutes' => 2400,
             'attendance_entries' => null,
+            'description' => "=== Type(s) & Objective(s) ===\nComplete dashboard work.\n\n=== Content & Skills ===\nApplied Laravel and testing skills.",
         ]);
 
         $this->actingAs($supervisor)
@@ -66,7 +67,11 @@ class FoundationWorkflowTest extends TestCase
             ->assertOk()
             ->assertSee('Student declared: 40.00 hrs')
             ->assertSee('No daily attendance breakdown was recorded.')
-            ->assertSee('Verified hours');
+            ->assertSee('Verified hours')
+            ->assertSee('Weekly objectives')
+            ->assertSee('Complete dashboard work.')
+            ->assertSee('Content, activities and skills applied')
+            ->assertSee('Applied Laravel and testing skills.');
     }
 
     public function test_approved_logbook_cannot_be_edited(): void
@@ -226,7 +231,10 @@ class FoundationWorkflowTest extends TestCase
             ->assertOk()
             ->assertSee('Status:')
             ->assertSee('pending')
+            ->assertSee('Weekly objectives')
             ->assertSee('Complete weekly tasks')
+            ->assertSee('Content, activities and skills applied')
+            ->assertSee('Applied technical and communication skills')
             ->assertSee('Declared: 28.00 hours');
 
         $this->assertSame(1680, $logbook->rendered_minutes);

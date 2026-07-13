@@ -34,11 +34,9 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="p-8 prose prose-slate max-w-none">
-                <!-- Using nl2br to preserve their line breaks -->
-                {!! nl2br(e($logbook->description)) !!}
-            </div>
+        @include('logbooks.partials.content-sections', ['logbook' => $logbook])
+
+        <div class="mt-6 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
 
             @if($logbook->attendance_entries)
                 <div class="border-t border-slate-200 p-6">
