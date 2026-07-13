@@ -36,7 +36,9 @@
         }
         .body-text {
             text-align: justify;
-            white-space: pre-wrap;
+        }
+        .body-text p {
+            margin: 0 0 14px 0;
         }
         .signature {
             margin-top: 40px;
@@ -72,13 +74,12 @@
     </div>
 
     <div class="body-text">
-Dear {{ $manager }},
-
-{{ $coverLetter->body_text }}
-
-Sincerely,
-
-<strong>{{ $username }}</strong>
+        <p>Dear {{ $manager }},</p>
+        @foreach(preg_split('/\R{2,}/', trim($coverLetter->body_text)) ?: [] as $paragraph)
+            <p>{{ trim($paragraph) }}</p>
+        @endforeach
+        <p class="signature">Sincerely,</p>
+        <p><strong>{{ $username }}</strong></p>
     </div>
 
 </body>

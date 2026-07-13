@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\StudentDocument;
 use App\Services\StudentDocumentReadinessService;
+use App\Services\StudentWordDocumentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -74,7 +75,7 @@ class StudentResumeController extends Controller
             ->header('Content-Disposition', 'attachment; filename="'.$fileName.'"');
     }
 
-    public function downloadDoc(Request $request, StudentDocumentReadinessService $readinessService)
+    public function downloadDoc(Request $request, StudentDocumentReadinessService $readinessService, StudentWordDocumentService $wordService)
     {
         [$user, $selectedTemplate, $html, $redirect] = $this->readyResume($request, $readinessService);
 
@@ -82,23 +83,23 @@ class StudentResumeController extends Controller
             return $redirect;
         }
 
-        $fileName = Str::slug($user->name).'-'.$selectedTemplate.'-resume.doc';
-        $contents = '<html><head><meta charset="utf-8"></head><body>'.$html.'</body></html>';
-        $path = 'student-documents/'.$user->id.'/resume/generated-'.Str::uuid().'.doc';
+        $fileName = Str::slug($user->name).'-'.$selectedTemplate.'-resume.docx';
+        $contents = $wordService->resume($user, $selectedTemplate);
+        $path = 'student-documents/'.$user->id.'/resume/generated-'.Str::uuid().'.docx';
 
         Storage::disk('local')->put($path, $contents);
         $user->studentDocuments()->create([
             'type' => StudentDocument::TYPE_RESUME,
-            'title' => ucfirst($selectedTemplate).' Resume DOC - '.now()->format('M d, Y H:i'),
+            'title' => ucfirst($selectedTemplate).' Resume DOCX - '.now()->format('M d, Y H:i'),
             'source' => 'generated',
             'original_name' => $fileName,
             'file_path' => $path,
-            'mime_type' => 'application/msword',
+            'mime_type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             'size' => strlen($contents),
         ]);
 
         return response($contents)
-            ->header('Content-Type', 'application/msword')
+            ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
             ->header('Content-Disposition', 'attachment; filename="'.$fileName.'"');
     }
 
@@ -131,10 +132,9 @@ class StudentResumeController extends Controller
         }
 
         $selectedTemplate = $this->resolveTemplate($request->query('template'));
-        $templateView = self::TEMPLATE_MAP[$selectedTemplate];
-        $html = view($templateView, [
+        $html = view('student.documents.pdf.resume-pdf', [
             'user' => $user,
-            'isPdf' => true,
+            'template' => $selectedTemplate,
         ])->render();
 
         return [$user, $selectedTemplate, $html, null];

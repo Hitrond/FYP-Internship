@@ -19,7 +19,7 @@
                     </form>
                     <form class="download-cover-letter" action="{{ route('student.cover-letter.download-doc') }}" method="GET">
                         <button type="submit" class="flex items-center gap-2 rounded-xl bg-white px-6 py-2.5 text-sm font-bold text-indigo-700 ring-1 ring-indigo-200 transition hover:bg-indigo-50">
-                            Download DOC
+                            Download Editable DOCX
                         </button>
                     </form>
                 </div>

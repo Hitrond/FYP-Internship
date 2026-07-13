@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CoverLetter;
 use App\Models\StudentDocument;
 use App\Services\StudentDocumentReadinessService;
+use App\Services\StudentWordDocumentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -104,7 +105,7 @@ class CoverLetterController extends Controller
             ->header('Content-Disposition', 'attachment; filename="'.$fileName.'"');
     }
 
-    public function downloadDoc(StudentDocumentReadinessService $readinessService)
+    public function downloadDoc(StudentDocumentReadinessService $readinessService, StudentWordDocumentService $wordService)
     {
         [$user, $coverLetter, $redirect] = $this->readyCoverLetter($readinessService);
 
@@ -113,66 +114,24 @@ class CoverLetterController extends Controller
         }
 
         $company = $coverLetter->company_name ?: 'general';
-        $fileName = Str::slug($user->name.'-'.$company.'-cover-letter').'.doc';
-        $contents = $this->wordCoverLetter($user, $coverLetter);
-        $path = 'student-documents/'.$user->id.'/cover_letter/generated-'.Str::uuid().'.doc';
+        $fileName = Str::slug($user->name.'-'.$company.'-cover-letter').'.docx';
+        $contents = $wordService->coverLetter($user, $coverLetter);
+        $path = 'student-documents/'.$user->id.'/cover_letter/generated-'.Str::uuid().'.docx';
 
         Storage::disk('local')->put($path, $contents);
         $user->studentDocuments()->create([
             'type' => StudentDocument::TYPE_COVER_LETTER,
-            'title' => ($coverLetter->company_name ?: 'General').' Cover Letter DOC - '.now()->format('M d, Y H:i'),
+            'title' => ($coverLetter->company_name ?: 'General').' Cover Letter DOCX - '.now()->format('M d, Y H:i'),
             'source' => 'generated',
             'original_name' => $fileName,
             'file_path' => $path,
-            'mime_type' => 'application/msword',
+            'mime_type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             'size' => strlen($contents),
         ]);
 
         return response($contents)
-            ->header('Content-Type', 'application/msword')
+            ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
             ->header('Content-Disposition', 'attachment; filename="'.$fileName.'"');
-    }
-
-    private function wordCoverLetter($user, CoverLetter $coverLetter): string
-    {
-        $profile = $user->profile;
-        $name = $this->rtf($user->name ?: 'Your Name');
-        $email = $this->rtf($profile?->personal_email ?: $user->email);
-        $phone = $this->rtf($profile?->contact_number ?: '+60 12-345 6789');
-        $manager = $this->rtf($coverLetter->hiring_manager ?: 'Hiring Manager');
-        $company = $this->rtf($coverLetter->company_name ?: 'Company Name');
-        $date = $this->rtf(now()->format('F j, Y'));
-        $body = $this->rtf($coverLetter->body_text ?: '');
-
-        // A4 with 18 mm side margins and 15 mm top/bottom margins, matching
-        // the PDF export. RTF is a real Word-compatible document format and
-        // avoids the inconsistent layout caused by HTML disguised as .doc.
-        return '{\\rtf1\\ansi\\deff0'
-            .'{\\fonttbl{\\f0 Arial;}}'
-            .'\\paperw11907\\paperh16840\\margl1021\\margr1021\\margt850\\margb850'
-            .'\\widowctrl\\viewkind4\\uc1'
-            .'\\pard\\f0\\fs48\\b\\cf0 '.$name.'\\b0\\par'
-            .'\\pard\\f0\\fs20\\cf0 '.$email.' | '.$phone.'\\par'
-            .'\\pard\\brdrb\\brdrs\\brdrw20\\brsp200\\sa400\\par'
-            .'\\pard\\f0\\fs22\\sa240 '.$date.'\\par'
-            .'\\pard\\f0\\fs22\\b '.$manager.'\\b0\\line '.$company.'\\line Malaysia\\par'
-            .'\\pard\\f0\\fs22\\sa360\\par'
-            .'\\pard\\f0\\fs22\\qj\\sl352\\slmult1 Dear '.$manager.',\\par\\par '
-            .str_replace("\n", '\\par ', $body)
-            .'\\par\\par Sincerely,\\par\\par\\par '
-            .'\\b '.$name.'\\b0\\par}';
-    }
-
-    private function rtf(string $value): string
-    {
-        $value = str_replace(["\r\n", "\r"], "\n", $value);
-        $value = str_replace(['\\', '{', '}'], ['\\\\', '\\{', '\\}'], $value);
-
-        return preg_replace_callback('/[^\x00-\x7F]/u', function (array $match): string {
-            $code = mb_ord($match[0]);
-
-            return '\\u'.($code > 32767 ? $code - 65536 : $code).'?';
-        }, $value);
     }
 
     private function readyCoverLetter(StudentDocumentReadinessService $readinessService): array

@@ -14,7 +14,7 @@
                         Download PDF Resume
                     </a>
                     <a href="{{ route('student.resume.download-doc', ['template' => $selectedTemplate]) }}" class="flex min-h-[3.25rem] w-full items-center justify-center rounded-xl bg-white px-4 py-3 text-sm font-bold text-emerald-700 ring-1 ring-emerald-200 transition hover:bg-emerald-50">
-                        Download DOC Resume
+                        Download Editable DOCX
                     </a>
                 </div>
             @else

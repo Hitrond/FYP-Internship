@@ -113,7 +113,7 @@ class StudentDocumentLibraryTest extends TestCase
         $this->actingAs($student)
             ->get(route('student.resume.download-doc', ['template' => 'classic']))
             ->assertOk()
-            ->assertHeader('Content-Type', 'application/msword')
+            ->assertHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
             ->assertDownload();
 
         CoverLetter::create([
@@ -141,6 +141,43 @@ class StudentDocumentLibraryTest extends TestCase
 
         foreach ($documents as $document) {
             Storage::disk('local')->assertExists($document->file_path);
+        }
+    }
+
+    public function test_each_resume_template_generates_valid_pdf_and_editable_docx(): void
+    {
+        Storage::fake('local');
+        $student = User::factory()->create(['role' => 'student']);
+        $student->profile()->create([
+            'full_name' => 'Document Test Student',
+            'personal_email' => $student->email,
+            'contact_number' => '+60 12-345 6789',
+            'bio' => 'A complete profile summary for document verification.',
+            'projects_summary' => "Project Alpha\nProject Beta",
+        ]);
+        $student->education()->create([
+            'institution_name' => 'Example University',
+            'degree' => 'Bachelor of Computing',
+            'field_of_study' => 'Software Engineering',
+            'start_date' => '2023-01-01',
+        ]);
+        $student->skills()->create(['name' => 'Laravel', 'proficiency' => 'Advanced']);
+
+        foreach (['classic', 'traditional', 'prime-ats'] as $template) {
+            $this->actingAs($student)
+                ->get(route('student.resume.download', compact('template')))
+                ->assertOk()
+                ->assertHeader('Content-Type', 'application/pdf')
+                ->assertSee('%PDF-', false);
+
+            $docx = $this->actingAs($student)
+                ->get(route('student.resume.download-doc', compact('template')))
+                ->assertOk()
+                ->assertHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+                ->getContent();
+
+            $this->assertStringStartsWith('PK', $docx);
+            $this->assertStringContainsString('word/document.xml', $docx);
         }
     }
 
