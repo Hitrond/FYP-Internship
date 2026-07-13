@@ -200,9 +200,11 @@ class FoundationWorkflowTest extends TestCase
         Storage::fake('public');
         Storage::fake('local');
         $supervisor = User::factory()->create(['role' => 'supervisor']);
+        $mentor = User::factory()->create(['role' => 'mentor']);
         $student = User::factory()->create([
             'role' => 'student',
             'supervisor_id' => $supervisor->id,
+            'mentor_id' => $mentor->id,
         ]);
         Storage::disk('local')->put('supervisors/signatures/test-signature.png', 'signature');
         Storage::disk('local')->put('supervisors/stamps/test-stamp.png', 'stamp');
@@ -261,6 +263,23 @@ class FoundationWorkflowTest extends TestCase
         $this->assertSame($supervisor->id, $logbook->approved_by_id);
         $this->assertNotNull($logbook->approved_at);
         $this->assertSame('Example Company', $logbook->approval_company_name);
+
+        foreach ([$student, $supervisor, $mentor] as $viewer) {
+            $route = $viewer->isStudent()
+                ? route('student.logbook.show', $logbook)
+                : route('logbooks.show', $logbook);
+
+            $this->actingAs($viewer)
+                ->get($route)
+                ->assertOk()
+                ->assertSee('Approved by:')
+                ->assertSee($supervisor->name)
+                ->assertSee('Example Company')
+                ->assertSee('Approval timestamp:')
+                ->assertSee($logbook->approved_at->format('M d, Y, h:i:s A'))
+                ->assertSee('Industrial Supervisor e-signature')
+                ->assertSee('Company stamp');
+        }
 
         $this->actingAs($student)
             ->get(route('logbooks.approval-asset', [$logbook, 'signature']))

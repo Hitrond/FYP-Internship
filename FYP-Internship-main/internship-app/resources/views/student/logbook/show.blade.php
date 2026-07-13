@@ -84,18 +84,19 @@
                 </div>
             @endif
 
-            @if($logbook->status === 'approved' && $logbook->approval_signature_path && $logbook->approval_stamp_path)
-                <div class="border-t border-emerald-200 bg-emerald-50 p-6">
+            <div class="border-t border-emerald-200 bg-emerald-50 p-6">
+                <p class="font-bold text-emerald-900">Digital verification</p>
+                @if($logbook->status === 'approved' && $logbook->approval_signature_path && $logbook->approval_stamp_path)
                     <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <p class="font-bold text-emerald-900">Digitally verified by the Industrial Supervisor</p>
-                            <p class="mt-1 text-sm text-emerald-800">
-                                {{ $logbook->approvedBy?->name }}
+                            <dl class="mt-2 space-y-1 text-sm text-emerald-800">
+                                <div><dt class="inline font-semibold">Approved by:</dt> <dd class="inline">{{ $logbook->approvedBy?->name }}</dd></div>
                                 @if($logbook->approval_company_name)
-                                    - {{ $logbook->approval_company_name }}
+                                    <div><dt class="inline font-semibold">Company:</dt> <dd class="inline">{{ $logbook->approval_company_name }}</dd></div>
                                 @endif
-                            </p>
-                            <p class="text-xs text-emerald-700">Approved {{ $logbook->approved_at?->format('M d, Y H:i') }}</p>
+                                <div><dt class="inline font-semibold">Approval timestamp:</dt> <dd class="inline">{{ $logbook->approved_at?->format('M d, Y, h:i:s A') }}</dd></div>
+                            </dl>
                         </div>
                         <div class="flex items-center gap-5 rounded-lg border border-emerald-200 bg-white p-4">
                             <div class="text-center">
@@ -108,8 +109,10 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            @endif
+                @else
+                    <p class="mt-2 text-sm text-emerald-800">Not digitally signed and stamped yet.</p>
+                @endif
+            </div>
             
             @if($logbook->evidence_file_path)
                 <div class="bg-slate-50 p-6 border-t border-slate-200 flex justify-between items-center">

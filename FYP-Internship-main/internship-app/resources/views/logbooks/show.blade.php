@@ -90,10 +90,22 @@
                 <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                     <h3 class="font-bold text-slate-900">Digital verification</h3>
                     @if($logbook->status === 'approved' && $logbook->approval_signature_path && $logbook->approval_stamp_path)
-                        <p class="mt-1 text-sm text-slate-600">Signed by {{ $logbook->approvedBy?->name }} on {{ $logbook->approved_at?->format('M d, Y H:i') }}.</p>
-                        <div class="mt-4 flex items-center gap-5">
-                            <img src="{{ route('logbooks.approval-asset', [$logbook, 'signature']) }}" alt="E-signature" class="max-h-16 max-w-36 object-contain">
-                            <img src="{{ route('logbooks.approval-asset', [$logbook, 'stamp']) }}" alt="Company stamp" class="max-h-20 max-w-36 object-contain">
+                        <dl class="mt-3 space-y-1 text-sm text-slate-600">
+                            <div><dt class="inline font-semibold text-slate-800">Approved by:</dt> <dd class="inline">{{ $logbook->approvedBy?->name }}</dd></div>
+                            @if($logbook->approval_company_name)
+                                <div><dt class="inline font-semibold text-slate-800">Company:</dt> <dd class="inline">{{ $logbook->approval_company_name }}</dd></div>
+                            @endif
+                            <div><dt class="inline font-semibold text-slate-800">Approval timestamp:</dt> <dd class="inline">{{ $logbook->approved_at?->format('M d, Y, h:i:s A') }}</dd></div>
+                        </dl>
+                        <div class="mt-4 flex items-start gap-5">
+                            <div class="text-center">
+                                <img src="{{ route('logbooks.approval-asset', [$logbook, 'signature']) }}" alt="Industrial Supervisor e-signature" class="max-h-16 max-w-36 object-contain">
+                                <p class="mt-1 text-xs font-semibold text-slate-500">E-signature</p>
+                            </div>
+                            <div class="text-center">
+                                <img src="{{ route('logbooks.approval-asset', [$logbook, 'stamp']) }}" alt="Company stamp" class="max-h-20 max-w-36 object-contain">
+                                <p class="mt-1 text-xs font-semibold text-slate-500">Company stamp</p>
+                            </div>
                         </div>
                     @else
                         <p class="mt-2 text-sm text-slate-500">Not digitally signed and stamped yet.</p>

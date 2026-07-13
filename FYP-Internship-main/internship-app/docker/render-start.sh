@@ -9,6 +9,7 @@ fi
 
 php artisan migrate --force
 php artisan sus:seed-if-empty
+php artisan db:seed --class=SusApprovalAssetsSeeder --force
 php artisan config:cache
 php artisan view:cache
 
