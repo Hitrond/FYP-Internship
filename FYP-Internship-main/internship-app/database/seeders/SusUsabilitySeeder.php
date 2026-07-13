@@ -285,36 +285,39 @@ class SusUsabilitySeeder extends Seeder
     {
         $rows = [
             'adam@gmail.com' => [
-                1 => ['approved', 'Developed authentication pages and tested login workflow', 'Good progress. Authentication flow was completed clearly.'],
-                2 => ['overdue_locked', null, null],
-                3 => ['pending', 'Created student dashboard and company application tracker interface', null],
-                4 => ['open', null, null],
+                1 => ['approved', 'Developed authentication pages and tested login workflow', 'Good progress. Authentication flow was completed clearly.', 40],
+                2 => ['overdue_locked', null, null, 0],
+                3 => ['pending', 'Created student dashboard and company application tracker interface', null, 38],
+                4 => ['open', null, null, 0],
             ],
             'aisha@gmail.com' => [
-                1 => ['rejected', 'Prepared API endpoints for application tracker', 'Please provide clearer evidence and include API testing screenshots.'],
-                2 => ['approved', 'Updated API validation and fixed database relationship issue', 'Good improvement after correction.'],
-                3 => ['overdue_locked', null, null],
-                4 => ['open', null, null],
+                1 => ['rejected', 'Prepared API endpoints for application tracker', 'Please provide clearer evidence and include API testing screenshots.', 35],
+                2 => ['approved', 'Updated API validation and fixed database relationship issue', 'Good improvement after correction.', 40],
+                3 => ['overdue_locked', null, null, 0],
+                4 => ['open', null, null, 0],
             ],
             'daniel@gmail.com' => [
-                1 => ['approved', 'Designed wireframes for logbook and supervisor approval pages', 'Good design work and clear interface flow.'],
-                2 => ['pending', 'Implemented logbook submission form and evidence upload placeholder', null],
-                3 => ['approved', 'Implemented supervisor dashboard table and pending approval list', 'Clear progress and dashboard is easy to review.'],
-                4 => ['open', null, null],
+                1 => ['approved', 'Designed wireframes for logbook and supervisor approval pages', 'Good design work and clear interface flow.', 40],
+                2 => ['pending', 'Implemented logbook submission form and evidence upload placeholder', null, 39],
+                3 => ['approved', 'Implemented supervisor dashboard table and pending approval list', 'Clear progress and dashboard is easy to review.', 40],
+                4 => ['open', null, null, 0],
             ],
         ];
         $supervisorEmails = ['adam@gmail.com' => 'supervisor1@gmail.com', 'aisha@gmail.com' => 'supervisor2@gmail.com', 'daniel@gmail.com' => 'supervisor3@gmail.com'];
         foreach ($rows as $email => $weeks) {
-            foreach ($weeks as $week => [$status, $description, $feedback]) {
+            foreach ($weeks as $week => [$status, $description, $feedback, $hours]) {
                 $due = match ($week) {
                     1 => now()->subDays(21), 2 => now()->subDays(14), 3 => now()->subDays(7), default => now()->addDays(7)
                 };
                 $reviewed = in_array($status, ['approved', 'rejected'], true);
+                $startDate = $due->copy()->subDays(6);
+                $renderedMinutes = $hours * 60;
                 Logbook::updateOrCreate(['user_id' => $u[$email]->id, 'week_number' => $week], [
                     'internship_cycle_id' => $cycle->id, 'timeline_generated' => true,
-                    'start_date' => $due->copy()->subDays(6)->toDateString(), 'end_date' => $due->toDateString(),
+                    'start_date' => $startDate->toDateString(), 'end_date' => $due->toDateString(),
                     'submission_due_at' => $due, 'locked_at' => $status === 'overdue_locked' ? $due : null,
-                    'description' => $description, 'rendered_minutes' => $description ? 2400 : 0,
+                    'description' => $description, 'rendered_minutes' => $renderedMinutes,
+                    'attendance_entries' => $description ? $this->attendanceEntries($startDate, $renderedMinutes) : null,
                     'status' => $status, 'supervisor_remarks' => $feedback,
                     'approved_by_id' => $reviewed ? $u[$supervisorEmails[$email]]->id : null,
                     'approved_at' => $reviewed ? $due->copy()->addDay() : null,
@@ -322,6 +325,20 @@ class SusUsabilitySeeder extends Seeder
                 ]);
             }
         }
+    }
+
+    private function attendanceEntries(Carbon $startDate, int $totalMinutes): array
+    {
+        $minutesPerDay = intdiv($totalMinutes, 5);
+        $remainder = $totalMinutes % 5;
+
+        return collect(range(0, 4))->map(fn (int $day): array => [
+            'date' => $startDate->copy()->addDays($day)->toDateString(),
+            'status' => 'present',
+            'rendered_minutes' => $minutesPerDay + ($day < $remainder ? 1 : 0),
+            'note' => null,
+            'mc_evidence_path' => null,
+        ])->all();
     }
 
     private function seedEvaluations(array $u, InternshipCycle $cycle, EvaluationForm $form): void
