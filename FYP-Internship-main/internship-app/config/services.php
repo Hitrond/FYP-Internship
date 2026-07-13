@@ -24,6 +24,7 @@ return [
 
     'brevo' => [
         'key' => env('BREVO_API_KEY'),
+        'use_api' => env('BREVO_API_ENABLED', env('RENDER', false)),
     ],
 
     'ses' => [

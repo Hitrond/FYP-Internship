@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
@@ -29,6 +30,31 @@ class PasswordResetTest extends TestCase
         $this->post('/forgot-password', ['email' => $user->email]);
 
         Notification::assertSentTo($user, ResetPassword::class);
+    }
+
+    public function test_render_can_send_reset_link_through_brevo_https_api(): void
+    {
+        config([
+            'services.brevo.key' => 'test-api-key',
+            'services.brevo.use_api' => true,
+            'mail.from.address' => 'verified@example.com',
+            'mail.from.name' => 'InternTrack',
+        ]);
+        Http::fake([
+            'api.brevo.com/*' => Http::response(['messageId' => '<test@brevo>'], 201),
+        ]);
+        $user = User::factory()->create();
+
+        $this->post('/forgot-password', ['email' => $user->email])
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('status');
+
+        Http::assertSent(function ($request) use ($user) {
+            return $request->url() === 'https://api.brevo.com/v3/smtp/email'
+                && $request->hasHeader('api-key', 'test-api-key')
+                && $request['to'][0]['email'] === $user->email
+                && str_contains($request['htmlContent'], 'reset-password');
+        });
     }
 
     public function test_reset_password_screen_can_be_rendered(): void
