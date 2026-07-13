@@ -41,7 +41,7 @@
                                 <th class="py-4 px-6">Student</th>
                                 <th class="py-4 px-6">Week</th>
                                 <th class="py-4 px-6">Status</th>
-                                <th class="py-4 px-6">Verified hours</th>
+                                <th class="py-4 px-6">Declared / verified hours</th>
                                 <th class="py-4 px-6">Feedback</th>
                                 <th class="py-4 px-6">Reviewed</th>
                                 <th class="py-4 px-6 text-right">Actions</th>
@@ -58,7 +58,8 @@
                                         </span>
                                     </td>
                                     <td class="py-4 px-6 text-sm text-slate-700">
-                                        {{ $logbook->verified_hours !== null ? number_format($logbook->verified_hours, 2).' hrs' : '—' }}
+                                        <p>Declared: <strong>{{ number_format($logbook->rendered_hours, 2) }} hrs</strong></p>
+                                        <p class="mt-1 text-emerald-700">Verified: <strong>{{ $logbook->verified_hours !== null ? number_format($logbook->verified_hours, 2).' hrs' : 'Not verified' }}</strong></p>
                                         @if($logbook->attendance_remarks)
                                             <p class="mt-1 text-xs text-amber-700">{{ $logbook->attendance_remarks }}</p>
                                         @endif

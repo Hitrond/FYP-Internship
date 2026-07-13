@@ -99,12 +99,12 @@
     {{ $logbook->description }}
 </div>
 
-@if($logbook->attendance_entries)
-    <div class="mt-4 overflow-hidden rounded-xl border border-slate-200">
-        <div class="flex items-center justify-between bg-slate-50 px-4 py-3">
-            <p class="font-semibold text-slate-900">Attendance record</p>
-            <span class="text-sm font-semibold text-indigo-700">{{ number_format($logbook->rendered_hours, 2) }} declared hours</span>
-        </div>
+<div class="mt-4 overflow-hidden rounded-xl border border-slate-200">
+    <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-50 px-4 py-3">
+        <p class="font-semibold text-slate-900">Attendance and working hours</p>
+        <span class="text-sm font-semibold text-indigo-700">Student declared: {{ number_format($logbook->rendered_hours, 2) }} hrs</span>
+    </div>
+    @if($logbook->attendance_entries)
         <div class="max-h-64 overflow-auto">
             <table class="w-full text-sm">
                 <thead class="bg-slate-100 text-xs uppercase text-slate-500">
@@ -140,8 +140,11 @@
                 </tbody>
             </table>
         </div>
-    </div>
-    <form action="{{ route('supervisor.logbooks.approve', $logbook->id) }}" method="POST" class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+    @else
+        <p class="px-4 py-3 text-sm text-slate-500">No daily attendance breakdown was recorded. Verify the declared total before approval.</p>
+    @endif
+</div>
+<form action="{{ route('supervisor.logbooks.approve', $logbook->id) }}" method="POST" class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
         @csrf
         @method('PATCH')
         <div class="grid gap-3 sm:grid-cols-2">
@@ -155,8 +158,7 @@
             </div>
         </div>
         <button type="submit" @disabled(!$canSignLogbooks) class="mt-3 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40">Verify, sign & approve</button>
-    </form>
-@endif
+</form>
 
 @if($logbook->evidence_file_path)
     <div class="mt-4 flex items-center justify-between rounded-xl border border-indigo-200 bg-indigo-50 p-4">

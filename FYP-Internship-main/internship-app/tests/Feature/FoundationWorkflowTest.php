@@ -52,6 +52,23 @@ class FoundationWorkflowTest extends TestCase
             ->assertSee('Please include measurable outcomes.');
     }
 
+    public function test_supervisor_can_verify_total_hours_without_daily_attendance_entries(): void
+    {
+        $supervisor = User::factory()->create(['role' => 'supervisor']);
+        $student = User::factory()->create(['role' => 'student', 'supervisor_id' => $supervisor->id]);
+        $this->createLogbook($student, [
+            'rendered_minutes' => 2400,
+            'attendance_entries' => null,
+        ]);
+
+        $this->actingAs($supervisor)
+            ->get(route('supervisor.logbooks.index'))
+            ->assertOk()
+            ->assertSee('Student declared: 40.00 hrs')
+            ->assertSee('No daily attendance breakdown was recorded.')
+            ->assertSee('Verified hours');
+    }
+
     public function test_approved_logbook_cannot_be_edited(): void
     {
         $student = User::factory()->create(['role' => 'student']);
