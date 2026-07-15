@@ -154,6 +154,7 @@ Route::middleware('auth')->group(function () {
         Route::patch('/final-clearances/{finalClearance}/approve', [MentorFinalClearanceController::class, 'approve'])->name('final-clearances.approve');
         Route::patch('/final-clearances/{finalClearance}/reject', [MentorFinalClearanceController::class, 'reject'])->name('final-clearances.reject');
         Route::get('/evaluations', [PerformanceEvaluationController::class, 'mentorIndex'])->name('evaluations.index');
+        Route::get('/logbooks', [LogbookController::class, 'mentorIndex'])->name('logbooks.index');
         Route::patch('/logbooks/{logbook}/extension/approve', [LogbookController::class, 'approveExtension'])->name('logbooks.extension.approve');
         Route::patch('/logbooks/{logbook}/extension/reject', [LogbookController::class, 'rejectExtension'])->name('logbooks.extension.reject');
         Route::post('/results/{student}', [MentorResultController::class, 'store'])->name('results.store');

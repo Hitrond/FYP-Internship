@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Logbook;
+use App\Models\InternshipCycle;
 use App\Notifications\WorkflowAlertNotification;
 use App\Services\PlacementTimelineService;
 use Carbon\Carbon;
@@ -15,6 +16,36 @@ use Throwable;
 
 class LogbookController extends Controller
 {
+    public function mentorIndex(Request $request, PlacementTimelineService $timeline)
+    {
+        $mentor = $request->user();
+        $cycles = InternshipCycle::whereHas('assignments', fn ($query) => $query->where('mentor_id', $mentor->id))
+            ->latest('placement_window_start')
+            ->get();
+        $activeCycle = $request->filled('semester')
+            ? $cycles->firstWhere('id', $request->integer('semester'))
+            : InternshipCycle::active();
+
+        $students = $mentor->assignedStudents()
+            ->when($activeCycle, fn ($query) => $query->whereHas('cycleAssignments', fn ($assignment) => $assignment
+                ->where('internship_cycle_id', $activeCycle->id)
+                ->where('mentor_id', $mentor->id)))
+            ->with(['profile', 'logbooks' => fn ($query) => $query
+                ->when($activeCycle, fn ($query) => $query->where('internship_cycle_id', $activeCycle->id))
+                ->orderBy('week_number')])
+            ->orderBy('name')
+            ->get();
+
+        $students->each(fn ($student) => $student->logbooks->each(fn (Logbook $logbook) => $timeline->sync($logbook)));
+
+        $selectedStudentId = $request->filled('student') ? $request->integer('student') : null;
+        $status = in_array($request->input('status'), ['approved', 'pending', 'rejected', 'overdue_locked', 'open', 'scheduled'], true)
+            ? $request->input('status')
+            : null;
+
+        return view('mentor.logbooks.index', compact('students', 'cycles', 'activeCycle', 'selectedStudentId', 'status'));
+    }
+
     public function index(PlacementTimelineService $timeline)
     {
         $user = Auth::user();

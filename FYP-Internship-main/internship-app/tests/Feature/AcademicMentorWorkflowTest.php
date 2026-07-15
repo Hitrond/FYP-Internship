@@ -165,6 +165,29 @@ class AcademicMentorWorkflowTest extends TestCase
             ->assertSee('Placement approval: Not available');
     }
 
+    public function test_mentor_can_filter_the_multi_student_logbook_monitor(): void
+    {
+        [$student, $mentor] = $this->assignedStudent();
+        $otherStudent = User::factory()->create(['role' => 'student', 'mentor_id' => $mentor->id]);
+        Logbook::create([
+            'user_id' => $student->id,
+            'week_number' => 1,
+            'start_date' => now()->startOfWeek(),
+            'end_date' => now()->startOfWeek()->addDays(4),
+            'description' => 'Approved work.',
+            'status' => 'approved',
+        ]);
+
+        $this->actingAs($mentor)
+            ->get(route('mentor.logbooks.index', ['student' => $student->id, 'status' => 'approved']))
+            ->assertOk()
+            ->assertSee('Logbook status guide')
+            ->assertSee($student->name)
+            ->assertSee('1 student shown')
+            ->assertSee('Week 1')
+            ->assertSee('Approved');
+    }
+
     public function test_mentor_selects_locks_and_exports_final_result(): void
     {
         [$student, $mentor] = $this->assignedStudent();

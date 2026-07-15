@@ -50,7 +50,7 @@
                 $workflowSteps = [
                     'pre_placement' => ['label' => '1. Student applications', 'help' => 'Monitor application progress and offer letters.', 'route' => route('mentor.dashboard')],
                     'placement_review' => ['label' => '2. Placement approval', 'help' => 'Check placement details and approve or reject submissions.', 'route' => route('mentor.clearances.index', ['status' => 'pending'])],
-                    'internship' => ['label' => '3. Internship monitoring', 'help' => 'Review logbooks, extensions and supervisor evaluations.', 'route' => route('mentor.evaluations.index')],
+                    'internship' => ['label' => '3. Internship monitoring', 'help' => 'Review every student’s weekly logbook progress and exceptions.', 'route' => route('mentor.logbooks.index')],
                     'completion' => ['label' => '4. Completion', 'help' => 'Review final clearance and record the final result.', 'route' => route('mentor.final-clearances.index')],
                 ];
             @endphp
@@ -224,9 +224,20 @@
             @endif
 
             <div class="space-y-4">
-                <div>
-                    <h3 class="text-lg font-bold text-slate-900">Active internship cohort</h3>
-                    <p class="text-sm text-slate-500">Weekly statuses on one screen, plus final evaluation and module result. The Academic Mentor selects and locks the final pass/fail decision after reviewing the evidence.</p>
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900">Active internship cohort</h3>
+                        <p class="text-sm text-slate-500">Weekly status overview. Use the dedicated monitor to filter and navigate multiple students.</p>
+                    </div>
+                    <a href="{{ route('mentor.logbooks.index') }}" class="rounded-lg bg-indigo-600 px-4 py-2.5 text-center text-xs font-bold uppercase tracking-wider text-white hover:bg-indigo-700">Open student logbook monitor</a>
+                </div>
+                <div class="flex flex-wrap gap-2 rounded-xl border border-slate-200 bg-white p-4 text-xs font-bold shadow-sm" aria-label="Logbook colour guide">
+                    <span class="mr-1 self-center text-slate-500">Status guide:</span>
+                    <span class="rounded-md border border-emerald-200 bg-emerald-100 px-2.5 py-1 text-emerald-800">✓ Approved</span>
+                    <span class="rounded-md border border-amber-200 bg-amber-100 px-2.5 py-1 text-amber-800">! Pending review</span>
+                    <span class="rounded-md border border-red-200 bg-red-100 px-2.5 py-1 text-red-800">× Rejected / overdue</span>
+                    <span class="rounded-md border border-indigo-200 bg-indigo-100 px-2.5 py-1 text-indigo-800">○ Open</span>
+                    <span class="rounded-md border border-slate-200 bg-slate-100 px-2.5 py-1 text-slate-600">– Scheduled</span>
                 </div>
                 @foreach($assignedStudents as $student)
                     @php
