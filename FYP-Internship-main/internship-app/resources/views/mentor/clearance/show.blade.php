@@ -56,9 +56,13 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <a href="{{ route('mentor.clearances.download', [$clearance, 'job_offer']) }}" class="block p-4 border border-slate-200 rounded-lg bg-slate-50 hover:bg-white">Job Offer Letter</a>
-                        <a href="{{ route('mentor.clearances.download', [$clearance, 'indemnity_letter']) }}" class="block p-4 border border-slate-200 rounded-lg bg-slate-50 hover:bg-white">Indemnity Letter</a>
-                        <a href="{{ route('mentor.clearances.download', [$clearance, 'placement_agreement']) }}" class="block p-4 border border-slate-200 rounded-lg bg-slate-50 hover:bg-white">Placement Agreement</a>
+                        @foreach(['job_offer' => ['Job Offer Letter', $clearance->job_offer_path], 'indemnity_letter' => ['Indemnity Letter', $clearance->indemnity_path], 'placement_agreement' => ['Placement Agreement', $clearance->placement_agreement_path]] as $type => [$label, $path])
+                            @if($path)
+                                <a href="{{ route('mentor.clearances.download', [$clearance, $type]) }}" class="block rounded-lg border border-slate-200 bg-slate-50 p-4 font-semibold text-indigo-700 hover:bg-white">{{ $label }}<span class="mt-1 block text-xs font-normal text-slate-500">Download document</span></a>
+                            @else
+                                <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 text-slate-500"><span class="font-semibold">{{ $label }}</span><span class="mt-1 block text-xs">Not available</span></div>
+                            @endif
+                        @endforeach
                     </div>
 
                     <div class="flex flex-col gap-4 pt-4 border-t border-slate-100">

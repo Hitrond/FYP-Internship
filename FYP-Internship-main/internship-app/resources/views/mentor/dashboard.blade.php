@@ -46,6 +46,32 @@
             @if(session('error'))
                 <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">{{ session('error') }}</div>
             @endif
+            @php
+                $workflowSteps = [
+                    'pre_placement' => ['label' => '1. Student applications', 'help' => 'Monitor application progress and offer letters.', 'route' => route('mentor.dashboard')],
+                    'placement_review' => ['label' => '2. Placement approval', 'help' => 'Check placement details and approve or reject submissions.', 'route' => route('mentor.clearances.index', ['status' => 'pending'])],
+                    'internship' => ['label' => '3. Internship monitoring', 'help' => 'Review logbooks, extensions and supervisor evaluations.', 'route' => route('mentor.evaluations.index')],
+                    'completion' => ['label' => '4. Completion', 'help' => 'Review final clearance and record the final result.', 'route' => route('mentor.final-clearances.index')],
+                ];
+            @endphp
+            <section aria-labelledby="workflow-title" class="overflow-hidden rounded-xl border border-indigo-200 bg-white shadow-sm">
+                <div class="border-b border-indigo-100 bg-indigo-50 px-6 py-4">
+                    <p class="text-xs font-bold uppercase tracking-[0.16em] text-indigo-600">Current event</p>
+                    <h3 id="workflow-title" class="mt-1 text-lg font-bold text-slate-900">{{ $workflowSteps[$workflowStage]['label'] }}</h3>
+                    <p class="mt-1 text-sm text-slate-600">{{ $workflowSteps[$workflowStage]['help'] }} Use the highlighted step to open the relevant workspace.</p>
+                </div>
+                <ol class="grid gap-px bg-slate-200 md:grid-cols-4" aria-label="Internship event timeline">
+                    @foreach($workflowSteps as $key => $step)
+                        <li class="bg-white">
+                            <a href="{{ $step['route'] }}" @if($key === $workflowStage) aria-current="step" @endif class="block h-full border-t-4 px-5 py-4 transition hover:bg-slate-50 {{ $key === $workflowStage ? 'border-indigo-600 bg-indigo-50/60' : 'border-transparent' }}">
+                                <span class="text-sm font-bold {{ $key === $workflowStage ? 'text-indigo-700' : 'text-slate-700' }}">{{ $step['label'] }}</span>
+                                <span class="mt-1 block text-xs leading-5 text-slate-500">{{ $step['help'] }}</span>
+                                <span class="mt-3 inline-block text-xs font-bold {{ $key === $workflowStage ? 'text-indigo-700' : 'text-slate-500' }}">{{ $key === $workflowStage ? 'Go to current action →' : 'Open workspace →' }}</span>
+                            </a>
+                        </li>
+                    @endforeach
+                </ol>
+            </section>
             @if($attendanceAlerts->isNotEmpty())
                 <div class="overflow-hidden rounded-xl border border-red-300 bg-red-50 shadow-sm">
                     <div class="border-b border-red-200 px-6 py-4">
@@ -110,7 +136,8 @@
                                 <th class="px-6 py-3">Rejected</th>
                                 <th class="px-6 py-3">Accepted</th>
                                 <th class="px-6 py-3">Intervention</th>
-                                <th class="px-6 py-3 text-right">Offer</th>
+                                <th class="px-6 py-3">Placement approval</th>
+                                <th class="px-6 py-3 text-right">Next action</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -120,6 +147,7 @@
                                     $rejectedCount = $student->applications->where('status', 'Rejected')->count();
                                     $offerApplication = $student->applications->first(fn ($application) => $application->offer_letter_path);
                                     $highRejection = $applicationCount >= 3 && ($rejectedCount / $applicationCount) >= 0.5;
+                                    $placement = $student->latestPlacementClearance;
                                 @endphp
                                 <tr class="{{ $applicationCount === 0 || $highRejection ? 'bg-red-50' : '' }}">
                                     <td class="px-6 py-4 font-semibold text-slate-900">{{ $student->name }}</td>
@@ -137,8 +165,17 @@
                                             <span class="text-xs font-semibold text-emerald-600">On track</span>
                                         @endif
                                     </td>
+                                    <td class="px-6 py-4">
+                                        @if($placement)
+                                            <span class="rounded-full px-2.5 py-1 text-xs font-bold capitalize {{ $placement->status === 'approved' ? 'bg-emerald-100 text-emerald-700' : ($placement->status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700') }}">{{ $placement->status }}</span>
+                                        @else
+                                            <span class="text-sm font-semibold text-slate-500">Not available</span>
+                                        @endif
+                                    </td>
                                     <td class="px-6 py-4 text-right">
-                                        @if($offerApplication)
+                                        @if($placement)
+                                            <a href="{{ route('mentor.clearances.show', $placement) }}" class="font-semibold text-indigo-600 hover:text-indigo-800">{{ $placement->status === 'pending' ? 'Review placement' : 'View placement' }}</a>
+                                        @elseif($offerApplication)
                                             <a href="{{ route('applications.offer-letter', $offerApplication) }}" class="font-semibold text-indigo-600 hover:text-indigo-800">View offer</a>
                                         @else
                                             <span class="text-slate-400">—</span>
@@ -146,7 +183,7 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="8" class="px-6 py-10 text-center text-slate-500">No students assigned.</td></tr>
+                                <tr><td colspan="9" class="px-6 py-10 text-center text-slate-500">No students assigned.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

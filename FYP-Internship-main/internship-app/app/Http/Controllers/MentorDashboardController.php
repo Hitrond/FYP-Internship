@@ -59,6 +59,8 @@ class MentorDashboardController extends Controller
             ->with([
                 'profile',
                 'applications',
+                'latestPlacementClearance' => fn ($query) => $query
+                    ->when($activeCycle, fn ($query) => $query->where('internship_cycle_id', $activeCycle->id)),
                 'logbooks' => fn ($query) => $query
                     ->when($activeCycle, fn ($query) => $query->where('internship_cycle_id', $activeCycle->id)),
                 'performanceEvaluations' => fn ($query) => $query
@@ -136,6 +138,16 @@ class MentorDashboardController extends Controller
             ->oldest('extension_requested_at')
             ->get();
 
+        $workflowStage = 'pre_placement';
+        if ($pendingCount > 0) {
+            $workflowStage = 'placement_review';
+        } elseif ($assignedStudents->contains(fn ($student) => $student->latestPlacementClearance?->status === 'approved')) {
+            $workflowStage = 'internship';
+        }
+        if ($assignedStudents->isNotEmpty() && $assignedStudents->every(fn ($student) => (bool) $student->internshipResult)) {
+            $workflowStage = 'completion';
+        }
+
         return view('mentor.dashboard', compact(
             'pendingClearances',
             'pendingCount',
@@ -147,6 +159,7 @@ class MentorDashboardController extends Controller
             'activeCycle',
             'cycles',
             'selectedCycle',
+            'workflowStage',
         ));
     }
 }

@@ -148,6 +148,23 @@ class AcademicMentorWorkflowTest extends TestCase
             ->assertSee('Applied Laravel and PostgreSQL skills.');
     }
 
+    public function test_mentor_dashboard_labels_missing_placement_as_not_available(): void
+    {
+        [$student, $mentor] = $this->assignedStudent();
+
+        $this->actingAs($mentor)
+            ->get(route('mentor.dashboard'))
+            ->assertOk()
+            ->assertSee('Internship event timeline', false)
+            ->assertSee('Placement approval')
+            ->assertSee('Not available');
+
+        $this->actingAs($mentor)
+            ->get(route('mentor.clearances.index'))
+            ->assertOk()
+            ->assertSee('Placement approval: Not available');
+    }
+
     public function test_mentor_selects_locks_and_exports_final_result(): void
     {
         [$student, $mentor] = $this->assignedStudent();

@@ -85,7 +85,10 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="py-8 text-center text-slate-500">No placement submissions yet.</td>
+                                        <td colspan="7" class="py-12 text-center">
+                                            <p class="font-bold text-slate-700">Placement approval: Not available</p>
+                                            <p class="mt-1 text-sm text-slate-500">No student placement has been submitted for review yet.</p>
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>

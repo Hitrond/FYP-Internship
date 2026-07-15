@@ -49,9 +49,9 @@
                         <x-nav-link :href="route('supervisor.final-clearances.index')" :active="request()->routeIs('supervisor.final-clearances.*')">Final Clearance</x-nav-link>
                     @elseif($user->isMentor())
                         <x-nav-link :href="route('mentor.dashboard')" :active="request()->routeIs('mentor.dashboard')">Dashboard</x-nav-link>
-                        <x-nav-link :href="route('mentor.clearances.index')" :active="request()->routeIs('mentor.clearances.*')">Placements</x-nav-link>
-                        <x-nav-link :href="route('mentor.evaluations.index')" :active="request()->routeIs('mentor.evaluations.*')">Evaluations</x-nav-link>
-                        <x-nav-link :href="route('mentor.final-clearances.index')" :active="request()->routeIs('mentor.final-clearances.*')">Final Clearance</x-nav-link>
+                        <x-nav-link :href="route('mentor.clearances.index')" :active="request()->routeIs('mentor.clearances.*')">Placement Approvals</x-nav-link>
+                        <x-nav-link :href="route('mentor.evaluations.index')" :active="request()->routeIs('mentor.evaluations.*')">Supervisor Evaluations</x-nav-link>
+                        <x-nav-link :href="route('mentor.final-clearances.index')" :active="request()->routeIs('mentor.final-clearances.*')">Completion Approvals</x-nav-link>
                     @elseif($user->isStudent())
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">Dashboard</x-nav-link>
                         <x-nav-link :href="route('student.companies.index')" :active="request()->routeIs('student.companies.*', 'student.company-tracker.*')">Companies</x-nav-link>
@@ -136,9 +136,9 @@
                 <x-responsive-nav-link :href="route('supervisor.final-clearances.index')" :active="request()->routeIs('supervisor.final-clearances.*')">Final Clearance</x-responsive-nav-link>
             @elseif($user->isMentor())
                 <x-responsive-nav-link :href="route('mentor.dashboard')" :active="request()->routeIs('mentor.dashboard')">Dashboard</x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('mentor.clearances.index')" :active="request()->routeIs('mentor.clearances.*')">Placements</x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('mentor.evaluations.index')" :active="request()->routeIs('mentor.evaluations.*')">Evaluations</x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('mentor.final-clearances.index')" :active="request()->routeIs('mentor.final-clearances.*')">Final Clearance</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('mentor.clearances.index')" :active="request()->routeIs('mentor.clearances.*')">Placement Approvals</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('mentor.evaluations.index')" :active="request()->routeIs('mentor.evaluations.*')">Supervisor Evaluations</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('mentor.final-clearances.index')" :active="request()->routeIs('mentor.final-clearances.*')">Completion Approvals</x-responsive-nav-link>
             @elseif($user->isStudent())
                 <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">Dashboard</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('student.companies.index')" :active="request()->routeIs('student.companies.*', 'student.company-tracker.*')">Companies</x-responsive-nav-link>
