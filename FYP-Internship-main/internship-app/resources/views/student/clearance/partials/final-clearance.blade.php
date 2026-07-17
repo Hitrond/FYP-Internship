@@ -1,6 +1,7 @@
 @php
     $canSubmitFinal = ! $finalClearance || $finalClearance->status === 'rejected';
     $hasReviewers = Auth::user()->mentor_id && Auth::user()->supervisor_id;
+    $hasApprovedPlacement = isset($approvedPlacement) && $approvedPlacement;
 @endphp
 
 <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -114,7 +115,7 @@
                     <x-input-error class="mt-2" :messages="$errors->get('report_clearance_form')" />
                 </div>
                 <div class="flex justify-end">
-                    <button type="submit" @disabled(! $hasReviewers) class="rounded-lg bg-indigo-600 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50">
+                    <button type="submit" @disabled(! $hasReviewers || ! $hasApprovedPlacement) class="rounded-lg bg-indigo-600 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50">
                         {{ $finalClearance ? 'Resubmit final clearance' : 'Submit final clearance' }}
                     </button>
                 </div>

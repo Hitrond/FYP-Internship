@@ -57,6 +57,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/student/clearance', [StudentClearanceController::class, 'store'])->name('student.clearance.store');
         Route::patch('/student/clearance/{placementClearance}/dates', [StudentClearanceController::class, 'updateDates'])
             ->name('student.clearance.dates.update');
+        Route::get('/student/final-clearance', [FinalClearanceController::class, 'create'])->name('student.final-clearance.create');
         Route::post('/student/clearance/final', [FinalClearanceController::class, 'store'])->name('student.final-clearance.store');
         Route::get('/student/evaluations', [PerformanceEvaluationController::class, 'studentIndex'])
             ->name('student.evaluations.index');

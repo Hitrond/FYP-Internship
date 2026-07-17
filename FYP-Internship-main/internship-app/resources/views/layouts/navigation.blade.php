@@ -59,7 +59,8 @@
                         <x-nav-link :href="route('student.resume.builder')" :active="request()->routeIs('student.resume.*')">Resume</x-nav-link>
                         <x-nav-link :href="route('student.cover-letter.create')" :active="request()->routeIs('student.cover-letter.*')">Cover Letter</x-nav-link>
                         <x-nav-link :href="route('student.logbook.index')" :active="request()->routeIs('student.logbook.*')">Logbooks</x-nav-link>
-                        <x-nav-link :href="route('student.clearance.create')" :active="request()->routeIs('student.clearance.*')">Clearance</x-nav-link>
+                        <x-nav-link :href="route('student.clearance.create')" :active="request()->routeIs('student.clearance.*')">Placement</x-nav-link>
+                        <x-nav-link :href="route('student.final-clearance.create')" :active="request()->routeIs('student.final-clearance.*')">Final Clearance</x-nav-link>
                         <x-nav-link :href="route('student.evaluations.index')" :active="request()->routeIs('student.evaluations.*')">Evaluations</x-nav-link>
                     @endif
                 </div>
@@ -147,7 +148,8 @@
                 <x-responsive-nav-link :href="route('student.resume.builder')" :active="request()->routeIs('student.resume.*')">Resume Builder</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('student.cover-letter.create')" :active="request()->routeIs('student.cover-letter.*')">Cover Letter</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('student.logbook.index')" :active="request()->routeIs('student.logbook.*')">Logbooks</x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('student.clearance.create')" :active="request()->routeIs('student.clearance.*')">Clearance Hub</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('student.clearance.create')" :active="request()->routeIs('student.clearance.*')">Placement Submission</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('student.final-clearance.create')" :active="request()->routeIs('student.final-clearance.*')">Final Clearance</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('student.evaluations.index')" :active="request()->routeIs('student.evaluations.*')">Evaluations</x-responsive-nav-link>
             @endif
         </div>

@@ -24,7 +24,7 @@
                     'applications' => ['1. Find a placement', 'Track companies and follow-ups.', route('student.companies.index')],
                     'placement' => ['2. Submit placement', 'Send placement documents for approval.', route('student.clearance.create')],
                     'internship' => ['3. Complete internship', 'Submit and monitor weekly logbooks.', route('student.logbook.index')],
-                    'completion' => ['4. Complete clearance', 'Submit final documents and track approval.', route('student.clearance.create')],
+                    'completion' => ['4. Complete clearance', 'Submit final documents and track approval.', route('student.final-clearance.create')],
                 ];
             @endphp
             <section class="overflow-hidden rounded-2xl border border-indigo-200 bg-white shadow-sm" aria-labelledby="student-journey-title">
@@ -141,8 +141,8 @@
 
                     <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
                         <div class="flex items-center justify-between">
-                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Clearance</p>
-                            <a href="{{ route('student.clearance.create') }}" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800">Open</a>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ $latestClearance && in_array($latestClearance->status, ['approved', 'completed'], true) ? 'Final clearance' : 'Placement submission' }}</p>
+                            <a href="{{ $latestClearance && in_array($latestClearance->status, ['approved', 'completed'], true) ? route('student.final-clearance.create') : route('student.clearance.create') }}" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800">Open</a>
                         </div>
                         @if ($finalClearance)
                             <p class="mt-3 text-lg font-bold capitalize text-slate-900">{{ $finalClearance->status }}</p>

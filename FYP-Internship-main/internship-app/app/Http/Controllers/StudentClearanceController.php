@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\FinalClearance;
 use App\Models\InternshipCycle;
 use App\Models\PlacementClearance;
 use App\Services\PlacementTimelineService;
@@ -29,15 +28,9 @@ class StudentClearanceController extends Controller
         $prefillClearance = ($latestClearance && $latestClearance->status !== 'pending')
             ? $latestClearance
             : null;
-        $finalClearance = FinalClearance::with('placementClearance')
-            ->where('student_id', $student->id)
-            ->when($activeCycle, fn ($query) => $query->where('internship_cycle_id', $activeCycle->id))
-            ->first();
-
         return view('student.clearance.create', compact(
             'latestClearance',
             'prefillClearance',
-            'finalClearance',
             'activeCycle',
             'cycleAssignment',
             'cyclesConfigured',

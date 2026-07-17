@@ -9,6 +9,20 @@ use Illuminate\Support\Facades\Storage;
 
 class FinalClearanceController extends Controller
 {
+    public function create(Request $request)
+    {
+        $student = $request->user();
+        $finalClearance = FinalClearance::with('placementClearance')
+            ->where('student_id', $student->id)
+            ->first();
+        $approvedPlacement = PlacementClearance::where('student_id', $student->id)
+            ->whereIn('status', ['approved', 'completed'])
+            ->latest()
+            ->first();
+
+        return view('student.clearance.final', compact('finalClearance', 'approvedPlacement'));
+    }
+
     public function store(Request $request)
     {
         $student = $request->user();
@@ -93,7 +107,7 @@ class FinalClearanceController extends Controller
             Storage::disk('local')->delete($oldPath);
         }
 
-        return redirect()->route('student.clearance.create')
+        return redirect()->route('student.final-clearance.create')
             ->with('final-success', 'Final clearance submitted to your Mentor and Supervisor.');
     }
 

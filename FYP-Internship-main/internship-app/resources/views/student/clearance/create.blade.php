@@ -3,9 +3,9 @@
         <div class="flex flex-col gap-1">
             <p class="text-sm font-semibold uppercase tracking-[0.16em] text-indigo-600">Student workspace</p>
             <h2 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">
-                {{ __('Clearance Hub') }}
+                {{ __('Placement Submission') }}
             </h2>
-            <p class="text-sm text-slate-500">Manage placement setup and final internship sign-off.</p>
+            <p class="text-sm text-slate-500">Submit company details and placement documents before your internship begins.</p>
         </div>
     </x-slot>
 
@@ -46,8 +46,6 @@
                     Placement submissions are currently closed. The administrator must activate an internship semester before you can submit.
                 </div>
             @endif
-
-            @include('student.clearance.partials.final-clearance')
 
             <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                 <div class="p-8 space-y-8">

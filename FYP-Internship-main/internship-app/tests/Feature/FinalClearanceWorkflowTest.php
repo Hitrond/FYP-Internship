@@ -14,6 +14,24 @@ class FinalClearanceWorkflowTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_placement_and_final_clearance_are_separate_student_pages(): void
+    {
+        $student = User::factory()->create(['role' => 'student']);
+
+        $this->actingAs($student)
+            ->get(route('student.clearance.create'))
+            ->assertOk()
+            ->assertSee('Placement Submission')
+            ->assertDontSee('Submit these as separate documents:');
+
+        $this->actingAs($student)
+            ->get(route('student.final-clearance.create'))
+            ->assertOk()
+            ->assertSee('Final Internship Clearance')
+            ->assertSee('Final clearance is not available until your placement has been approved.')
+            ->assertDontSee('Company Name');
+    }
+
     public function test_student_needs_both_reviewers_before_submitting(): void
     {
         Storage::fake('local');
