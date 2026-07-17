@@ -79,6 +79,28 @@ class ProfileTest extends TestCase
         $this->assertNull($user->fresh());
     }
 
+    public function test_student_can_edit_previously_read_only_profile_fields(): void
+    {
+        $student = User::factory()->create(['role' => 'student']);
+
+        $this->actingAs($student)->put(route('student.profile.update'), [
+            'full_name' => 'Updated Student Name',
+            'tp_number' => 'TP012345',
+            'course_name' => 'Computer Science',
+            'specialization' => 'Data Analytics',
+            'intake_code' => 'UC3F2601',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('profiles', [
+            'user_id' => $student->id,
+            'full_name' => 'Updated Student Name',
+            'tp_number' => 'TP012345',
+            'course_name' => 'Computer Science',
+            'specialization' => 'Data Analytics',
+            'intake_code' => 'UC3F2601',
+        ]);
+    }
+
     public function test_correct_password_must_be_provided_to_delete_account(): void
     {
         $user = User::factory()->create();

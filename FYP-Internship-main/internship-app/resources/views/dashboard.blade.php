@@ -19,6 +19,26 @@
 
     <div class="min-h-screen bg-slate-50 py-8">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+            @php
+                $studentSteps = [
+                    'applications' => ['1. Find a placement', 'Track companies and follow-ups.', route('student.companies.index')],
+                    'placement' => ['2. Submit placement', 'Send placement documents for approval.', route('student.clearance.create')],
+                    'internship' => ['3. Complete internship', 'Submit and monitor weekly logbooks.', route('student.logbook.index')],
+                    'completion' => ['4. Complete clearance', 'Submit final documents and track approval.', route('student.clearance.create')],
+                ];
+            @endphp
+            <section class="overflow-hidden rounded-2xl border border-indigo-200 bg-white shadow-sm" aria-labelledby="student-journey-title">
+                <div class="border-b border-indigo-100 bg-indigo-50 px-6 py-4">
+                    <p class="text-xs font-bold uppercase tracking-wider text-indigo-600">Your current step</p>
+                    <h3 id="student-journey-title" class="mt-1 text-lg font-bold text-slate-900">{{ $studentSteps[$workflowStage][0] }}</h3>
+                    <p class="text-sm text-slate-600">{{ $studentSteps[$workflowStage][1] }}</p>
+                </div>
+                <ol class="grid gap-px bg-slate-200 md:grid-cols-4" aria-label="Internship journey">
+                    @foreach($studentSteps as $key => [$label, $help, $url])
+                        <li class="bg-white"><a href="{{ $url }}" @if($key === $workflowStage) aria-current="step" @endif class="block h-full border-t-4 p-4 {{ $key === $workflowStage ? 'border-indigo-600 bg-indigo-50/50' : 'border-transparent hover:bg-slate-50' }}"><span class="block text-sm font-bold {{ $key === $workflowStage ? 'text-indigo-700' : 'text-slate-700' }}">{{ $label }}</span><span class="mt-1 block text-xs leading-5 text-slate-500">{{ $help }}</span></a></li>
+                    @endforeach
+                </ol>
+            </section>
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 @foreach ([
                     ['label' => 'Applications', 'value' => $applicationCounts['total'], 'color' => 'text-slate-900'],

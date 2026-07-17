@@ -135,7 +135,7 @@ class AdminControlCentreTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.clearances.index'))
             ->assertOk()
-            ->assertSee('Admin Clearance & Supervisor Accounts', false)
+            ->assertSee('Placement & Supervisor Account Management', false)
             ->assertSee('Cohort Student')
             ->assertSee('Example Industries');
 

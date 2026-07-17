@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -46,7 +47,7 @@ class LogbookController extends Controller
         return view('mentor.logbooks.index', compact('students', 'cycles', 'activeCycle', 'selectedStudentId', 'status'));
     }
 
-    public function index(PlacementTimelineService $timeline)
+    public function index(Request $request, PlacementTimelineService $timeline)
     {
         $user = Auth::user();
         $logbooks = $user->logbooks()->get()
@@ -54,7 +55,32 @@ class LogbookController extends Controller
             ->keyBy('week_number');
         $totalWeeks = $this->totalWeeksFor($user);
 
-        return view('student.logbook.index', compact('logbooks', 'totalWeeks'));
+        $weeks = collect(range(1, $totalWeeks))
+            ->map(fn (int $week) => ['week' => $week, 'logbook' => $logbooks->get($week)])
+            ->when($request->filled('search'), function ($items) use ($request) {
+                $term = mb_strtolower(trim((string) $request->input('search')));
+                $weekNumber = (int) preg_replace('/\D+/', '', $term);
+
+                return $items->filter(fn ($item) => ($weekNumber > 0 && $item['week'] === $weekNumber)
+                    || str_contains('week '.$item['week'], $term));
+            })
+            ->when($request->filled('status'), function ($items) use ($request) {
+                $status = (string) $request->input('status');
+
+                return $items->filter(fn ($item) => ($item['logbook']?->status ?? 'not_generated') === $status);
+            })
+            ->values();
+        $page = max(1, $request->integer('page', 1));
+        $perPage = 8;
+        $weekEntries = new LengthAwarePaginator(
+            $weeks->forPage($page, $perPage)->values(),
+            $weeks->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        return view('student.logbook.index', compact('weekEntries', 'totalWeeks'));
     }
 
     public function create(Request $request, PlacementTimelineService $timeline)

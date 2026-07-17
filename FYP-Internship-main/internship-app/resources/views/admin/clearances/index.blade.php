@@ -2,8 +2,8 @@
     <x-slot name="header">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <p class="text-sm font-semibold uppercase tracking-wider text-indigo-600">Admin clearance</p>
-                <h2 class="mt-1 text-2xl font-bold text-slate-900">Admin Clearance & Supervisor Accounts</h2>
+                <p class="text-sm font-semibold uppercase tracking-wider text-indigo-600">Placement administration</p>
+                <h2 class="mt-1 text-2xl font-bold text-slate-900">Placement & Supervisor Account Management</h2>
                 <p class="mt-1 text-sm text-slate-500">Track every student and create Industrial Supervisor login emails after mentor approval.</p>
             </div>
             <a href="{{ route('admin.clearances.export', request()->query()) }}" class="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-700">

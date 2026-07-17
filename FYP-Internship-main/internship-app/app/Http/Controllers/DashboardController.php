@@ -52,6 +52,15 @@ class DashboardController extends Controller
             ? 'secured'
             : ($user->profile?->internship_status
                 ?? ($applications->contains('status', 'Interviewing') ? 'interviewing' : 'looking'));
+        $workflowStage = 'applications';
+        if ($acceptedApplication && ! $latestClearance) {
+            $workflowStage = 'placement';
+        } elseif ($latestClearance && in_array($latestClearance->status, ['approved', 'completed'], true)) {
+            $workflowStage = 'internship';
+        }
+        if ($finalClearance) {
+            $workflowStage = 'completion';
+        }
 
         return view('dashboard', [
             'applicationCounts' => [
@@ -72,6 +81,7 @@ class DashboardController extends Controller
             'latestClearance' => $latestClearance,
             'finalClearance' => $finalClearance,
             'internshipStatus' => $internshipStatus,
+            'workflowStage' => $workflowStage,
         ]);
     }
 }

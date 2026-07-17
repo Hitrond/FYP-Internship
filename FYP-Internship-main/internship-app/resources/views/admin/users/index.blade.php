@@ -9,7 +9,7 @@
             <div class="flex flex-wrap gap-3">
                 <a href="{{ route('admin.clearances.index') }}" class="inline-flex items-center px-4 py-2 bg-white border border-slate-300 rounded-lg font-semibold text-xs text-slate-700 uppercase tracking-widest hover:bg-slate-50 transition shadow-sm">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    Admin Clearance
+                    Placement & Supervisor Accounts
                 </a>
 
                 <a href="{{ route('admin.users.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 shadow-sm">
@@ -103,7 +103,7 @@
 
                                         <td class="py-4 px-6">
                                             @if($user->role === 'student')
-                                                <form action="{{ route('admin.users.assign-mentor', $user) }}" method="POST" class="flex items-center gap-2">
+                                                <form action="{{ route('admin.users.assign-mentor', $user) }}" method="POST" class="grid min-w-[260px] grid-cols-[minmax(0,1fr)_72px] items-stretch gap-2">
                                                     @csrf
                                                     @method('PATCH')
                                                     <select name="mentor_id" class="text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white py-1.5 pl-3 pr-8 min-w-[140px]">
@@ -114,7 +114,7 @@
                                                             </option>
                                                         @endforeach
                                                     </select>
-                                                    <button type="submit" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded transition">
+                                                    <button type="submit" class="inline-flex min-h-10 items-center justify-center whitespace-nowrap rounded-md bg-indigo-50 px-3 text-xs font-bold text-indigo-700 transition hover:bg-indigo-100">
                                                         Save
                                                     </button>
                                                 </form>

@@ -28,7 +28,7 @@
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 @foreach ([
-                    ['label' => 'Total', 'value' => $applications->count()],
+                    ['label' => 'Total', 'value' => $totalApplications],
                     ['label' => 'Applied', 'value' => $statusCounts->get('Applied', 0)],
                     ['label' => 'Interviewing', 'value' => $statusCounts->get('Interviewing', 0)],
                     ['label' => 'Accepted', 'value' => $statusCounts->get('Accepted', 0)],
@@ -40,13 +40,13 @@
                 @endforeach
             </div>
 
-            <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div class="border-b border-slate-100 p-6">
-                    <h3 class="text-lg font-semibold text-slate-900">Add an application</h3>
-                    <p class="text-sm text-slate-500">Only the company name and status are required.</p>
-                </div>
+            <details class="group rounded-2xl border border-slate-200 bg-white shadow-sm" @if($errors->any()) open @endif>
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 p-6 marker:hidden">
+                    <span><span class="block text-lg font-semibold text-slate-900">Add an application</span><span class="block text-sm text-slate-500">Only the company name and status are required.</span></span>
+                    <span class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white"><span class="group-open:hidden">Add application</span><span class="hidden group-open:inline">Close form</span><svg class="h-4 w-4 transition group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6"/></svg></span>
+                </summary>
 
-                <form method="POST" action="{{ route('student.companies.store') }}" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-6 gap-5 p-6">
+                <form method="POST" action="{{ route('student.companies.store') }}" enctype="multipart/form-data" class="grid grid-cols-1 gap-5 border-t border-slate-100 p-6 md:grid-cols-6">
                     @csrf
 
                     <div class="md:col-span-2">
@@ -112,36 +112,40 @@
                         </button>
                     </div>
                 </form>
-            </div>
+            </details>
 
             <div class="space-y-4">
-                <div>
-                    <h3 class="text-lg font-semibold text-slate-900">Your applications</h3>
-                    <p class="text-sm text-slate-500">{{ $applications->count() }} tracked {{ Str::plural('company', $applications->count()) }}</p>
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-900">Your applications</h3>
+                        <p class="text-sm text-slate-500">Showing {{ $applications->firstItem() ?? 0 }}–{{ $applications->lastItem() ?? 0 }} of {{ $applications->total() }} matching applications</p>
+                    </div>
+                    <form method="GET" action="{{ route('student.companies.index') }}" class="grid gap-2 sm:grid-cols-[minmax(220px,1fr)_180px_auto_auto]">
+                        <label><span class="sr-only">Search applications</span><input type="search" name="search" value="{{ request('search') }}" placeholder="Search company, role, location..." class="w-full rounded-lg border-slate-300 text-sm"></label>
+                        <label><span class="sr-only">Application status</span><select name="status" class="w-full rounded-lg border-slate-300 text-sm"><option value="">All statuses</option>@foreach($statuses as $status)<option value="{{ $status }}" @selected(request('status') === $status)>{{ $status }}</option>@endforeach</select></label>
+                        <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-bold text-white">Filter</button>
+                        <a href="{{ route('student.companies.index') }}" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-center text-sm font-bold text-slate-700">Reset</a>
+                    </form>
                 </div>
 
                 @forelse ($applications as $application)
-                    <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+                    <details class="group rounded-xl border border-slate-200 bg-white shadow-sm" @if((int) old('application_id') === $application->id) open @endif>
+                        <summary class="flex cursor-pointer list-none flex-col gap-4 p-5 marker:hidden sm:flex-row sm:items-center sm:justify-between">
+                            <div class="min-w-0">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <h4 class="truncate text-lg font-bold text-slate-900">{{ $application->company_name }}</h4>
+                                    <span class="rounded-full px-2.5 py-1 text-xs font-semibold @if($application->status === 'Accepted') bg-emerald-100 text-emerald-800 @elseif($application->status === 'Rejected') bg-red-100 text-red-800 @elseif($application->status === 'Interviewing') bg-blue-100 text-blue-800 @elseif($application->status === 'Offered') bg-violet-100 text-violet-800 @else bg-amber-100 text-amber-800 @endif">{{ $application->status }}</span>
+                                </div>
+                                <p class="mt-1 text-sm text-slate-500">{{ $application->position_title ?: 'Role not specified' }}{{ $application->location ? ' · '.$application->location : '' }}</p>
+                                @if($application->next_followup_on)<p class="mt-1 text-xs font-semibold text-amber-700">Follow up {{ $application->next_followup_on->format('M d, Y') }}</p>@endif
+                            </div>
+                            <span class="inline-flex shrink-0 items-center gap-2 text-sm font-bold text-indigo-700">View details <svg class="h-4 w-4 transition group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6"/></svg></span>
+                        </summary>
                         <form method="POST" action="{{ route('student.companies.update', $application) }}" enctype="multipart/form-data">
                             @csrf
                             @method('PUT')
-
-                            <div class="flex flex-col gap-4 border-b border-slate-100 p-6 md:flex-row md:items-center md:justify-between">
-                                <div>
-                                    <div class="flex flex-wrap items-center gap-2">
-                                        <h4 class="text-lg font-bold text-slate-900">{{ $application->company_name }}</h4>
-                                        <span class="rounded-full px-2.5 py-1 text-xs font-semibold
-                                            @if($application->status === 'Accepted') bg-emerald-100 text-emerald-800
-                                            @elseif($application->status === 'Rejected') bg-red-100 text-red-800
-                                            @elseif($application->status === 'Interviewing') bg-blue-100 text-blue-800
-                                            @elseif($application->status === 'Offered') bg-violet-100 text-violet-800
-                                            @else bg-amber-100 text-amber-800 @endif">
-                                            {{ $application->status }}
-                                        </span>
-                                    </div>
-                                    <p class="mt-1 text-sm text-slate-500">{{ $application->position_title ?: 'Role not specified' }}</p>
-                                </div>
-                                <div class="flex flex-wrap items-center gap-3">
+                            <input type="hidden" name="application_id" value="{{ $application->id }}">
+                            <div class="flex flex-wrap items-center justify-end gap-3 border-y border-slate-100 bg-slate-50 px-6 py-3">
                                     @if ($application->offer_letter_path)
                                         <a href="{{ route('student.companies.offer-letter', $application) }}" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800">
                                             Download offer
@@ -153,9 +157,8 @@
                                         </a>
                                     @endif
                                     <button type="submit" class="rounded-lg bg-slate-900 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white hover:bg-slate-700">
-                                        Save
+                                        Save changes
                                     </button>
-                                </div>
                             </div>
 
                             <div class="grid grid-cols-1 gap-5 p-6 md:grid-cols-3">
@@ -228,13 +231,16 @@
                                 <button type="submit" class="text-xs font-bold uppercase tracking-wider text-red-600 hover:text-red-800">Delete application</button>
                             </form>
                         </div>
-                    </div>
+                    </details>
                 @empty
                     <div class="rounded-xl border border-dashed border-slate-300 bg-white p-12 text-center">
                         <p class="font-semibold text-slate-700">No applications yet</p>
                         <p class="mt-1 text-sm text-slate-500">Add your first company using the form above.</p>
                     </div>
                 @endforelse
+                @if($applications->hasPages())
+                    <div class="pt-2">{{ $applications->links() }}</div>
+                @endif
             </div>
         </div>
     </div>

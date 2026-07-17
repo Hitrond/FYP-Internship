@@ -41,7 +41,7 @@
                         <x-nav-link :href="route('admin.semesters.index')" :active="request()->routeIs('admin.semesters.*')">Semesters</x-nav-link>
                         <x-nav-link :href="route('admin.evaluation-forms.index')" :active="request()->routeIs('admin.evaluation-forms.*')">Evaluation Forms</x-nav-link>
                         <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">Users</x-nav-link>
-                        <x-nav-link :href="route('admin.clearances.index')" :active="request()->routeIs('admin.clearances.*')">Admin Clearance</x-nav-link>
+                        <x-nav-link :href="route('admin.clearances.index')" :active="request()->routeIs('admin.clearances.*')">Placement & Accounts</x-nav-link>
                     @elseif($user->isSupervisor())
                         <x-nav-link :href="route('supervisor.dashboard')" :active="request()->routeIs('supervisor.dashboard')">Dashboard</x-nav-link>
                         <x-nav-link :href="route('supervisor.logbooks.index')" :active="request()->routeIs('supervisor.logbooks.*')">Logbooks</x-nav-link>
@@ -129,7 +129,7 @@
                 <x-responsive-nav-link :href="route('admin.semesters.index')" :active="request()->routeIs('admin.semesters.*')">Semesters</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.evaluation-forms.index')" :active="request()->routeIs('admin.evaluation-forms.*')">Evaluation Forms</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">Users</x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('admin.clearances.index')" :active="request()->routeIs('admin.clearances.*')">Admin Clearance</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.clearances.index')" :active="request()->routeIs('admin.clearances.*')">Placement & Supervisor Accounts</x-responsive-nav-link>
             @elseif($user->isSupervisor())
                 <x-responsive-nav-link :href="route('supervisor.dashboard')" :active="request()->routeIs('supervisor.dashboard')">Dashboard</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('supervisor.logbooks.index')" :active="request()->routeIs('supervisor.logbooks.*')">Logbooks</x-responsive-nav-link>

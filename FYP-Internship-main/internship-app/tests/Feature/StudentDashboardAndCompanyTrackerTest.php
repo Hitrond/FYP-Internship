@@ -141,6 +141,75 @@ class StudentDashboardAndCompanyTrackerTest extends TestCase
             ->assertRedirect(route('student.companies.index'));
     }
 
+    public function test_authenticated_subpages_have_back_and_close_navigation(): void
+    {
+        $student = User::factory()->create(['role' => 'student']);
+
+        $this->actingAs($student)
+            ->get(route('student.companies.index'))
+            ->assertOk()
+            ->assertSee('Page navigation', false)
+            ->assertSee('Back')
+            ->assertSee('Close')
+            ->assertSee(route('dashboard'), false);
+
+        $this->actingAs($student)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSee('Page navigation', false);
+    }
+
+    public function test_company_tracker_supports_search_status_filter_and_pagination(): void
+    {
+        $student = User::factory()->create(['role' => 'student']);
+        foreach (range(1, 10) as $number) {
+            $this->makeTrackedApplication($student, [
+                'company_name' => 'Company '.$number,
+                'status' => $number === 10 ? 'Interviewing' : 'Applied',
+            ]);
+        }
+
+        $this->actingAs($student)
+            ->get(route('student.companies.index', ['search' => 'Company 10', 'status' => 'Interviewing']))
+            ->assertOk()
+            ->assertSee('Company 10')
+            ->assertDontSee('Company 1</h4>', false)
+            ->assertSee('View details');
+
+        $this->actingAs($student)
+            ->get(route('student.companies.index'))
+            ->assertOk()
+            ->assertSee('Next');
+    }
+
+    public function test_weekly_logbooks_are_filterable_paginated_and_hide_extension_reason_inline(): void
+    {
+        $student = User::factory()->create(['role' => 'student']);
+        foreach (range(1, 10) as $week) {
+            Logbook::create([
+                'user_id' => $student->id,
+                'week_number' => $week,
+                'start_date' => now()->startOfWeek()->addWeeks($week - 1),
+                'end_date' => now()->startOfWeek()->addWeeks($week - 1)->addDays(4),
+                'description' => null,
+                'status' => $week === 3 ? 'overdue_locked' : 'scheduled',
+            ]);
+        }
+
+        $this->actingAs($student)
+            ->get(route('student.logbook.index', ['status' => 'overdue_locked']))
+            ->assertOk()
+            ->assertSee('Week 3')
+            ->assertSee('Request extension')
+            ->assertDontSee('Explain why an extension is needed')
+            ->assertSee('Why is an extension necessary?');
+
+        $this->actingAs($student)
+            ->get(route('student.logbook.index'))
+            ->assertOk()
+            ->assertSee('Next');
+    }
+
     private function makeTrackedApplication(User $student, array $overrides = []): Application
     {
         return Application::create(array_merge([

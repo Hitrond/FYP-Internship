@@ -41,20 +41,12 @@ class SupervisorDashboardController extends Controller
         $pendingClearances = FinalClearance::where('supervisor_id', $supervisor->id)
             ->where('supervisor_status', FinalClearance::STATUS_PENDING)
             ->count();
-        $recentLogbooks = Logbook::with('student')
-            ->whereIn('user_id', $studentIds)
-            ->when(in_array($request->input('logbook_status'), ['pending', 'approved', 'rejected', 'open', 'overdue_locked'], true), fn ($query) => $query->where('status', $request->input('logbook_status')))
-            ->latest('updated_at')
-            ->take(6)
-            ->get();
-
         return view('supervisor.dashboard', compact(
             'students',
             'pendingLogbooks',
             'attendanceIssues',
             'pendingEvaluations',
             'pendingClearances',
-            'recentLogbooks'
         ));
     }
 }

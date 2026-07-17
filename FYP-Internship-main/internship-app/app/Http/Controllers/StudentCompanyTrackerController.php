@@ -24,15 +24,30 @@ class StudentCompanyTrackerController extends Controller
 
         abort_unless($user && $user->isStudent(), 403);
 
-        $applications = $user->applications()
+        $baseQuery = $user->applications();
+        $statusCounts = (clone $baseQuery)->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status');
+        $totalApplications = (clone $baseQuery)->count();
+
+        $applications = $baseQuery
+            ->when($request->filled('search'), function ($query) use ($request): void {
+                $search = trim((string) $request->input('search'));
+                $query->where(function ($query) use ($search): void {
+                    $query->where('company_name', 'like', "%{$search}%")
+                        ->orWhere('position_title', 'like', "%{$search}%")
+                        ->orWhere('location', 'like', "%{$search}%");
+                });
+            })
+            ->when(in_array($request->input('status'), self::STATUSES, true), fn ($query) => $query->where('status', $request->input('status')))
             ->orderByRaw("case when status = 'Accepted' then 0 when status = 'Offered' then 1 when status = 'Interviewing' then 2 when status = 'Applied' then 3 when status = 'Interested' then 4 else 5 end")
             ->latest('updated_at')
-            ->get();
+            ->paginate(8)
+            ->withQueryString();
 
         return view('student.company-tracker.index', [
             'applications' => $applications,
             'statuses' => self::STATUSES,
-            'statusCounts' => $applications->countBy('status'),
+            'statusCounts' => $statusCounts,
+            'totalApplications' => $totalApplications,
         ]);
     }
 

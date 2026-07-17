@@ -96,12 +96,6 @@ class AdminDashboardController extends Controller
                 ->get(),
         ];
 
-        $recentPlacements = PlacementClearance::with(['student.mentor', 'student.supervisor'])
-            ->when($selectedCycle, fn ($query) => $query->where('internship_cycle_id', $selectedCycle->id))
-            ->latest()
-            ->take(8)
-            ->get();
-
         $resultCounts = InternshipResult::query()
             ->when($selectedCycle, fn ($query) => $query->where('internship_cycle_id', $selectedCycle->id))
             ->selectRaw('result, count(*) as total')
@@ -113,7 +107,6 @@ class AdminDashboardController extends Controller
             'roleCounts',
             'placementCounts',
             'alerts',
-            'recentPlacements',
             'resultCounts',
             'cycles',
             'selectedCycle',

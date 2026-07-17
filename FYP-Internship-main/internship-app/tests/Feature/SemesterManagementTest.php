@@ -96,6 +96,29 @@ class SemesterManagementTest extends TestCase
         $this->assertSame(InternshipCycle::STATUS_DRAFT, $draft->fresh()->status);
     }
 
+    public function test_admin_can_edit_an_active_semester_without_changing_its_status(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $cycle = $this->cycle(['status' => InternshipCycle::STATUS_ACTIVE]);
+
+        $this->actingAs($admin)->get(route('admin.semesters.edit', $cycle))->assertOk();
+        $this->actingAs($admin)->put(route('admin.semesters.update', $cycle), [
+            'name' => 'Updated Active Semester',
+            'intake_code' => $cycle->intake_code,
+            'academic_year' => $cycle->academic_year,
+            'placement_window_start' => '2026-08-10',
+            'placement_window_end' => '2026-09-30',
+            'duration_weeks' => 18,
+            'deadline_weekday' => 5,
+            'deadline_time' => '23:59',
+            'timezone' => 'Asia/Singapore',
+        ])->assertRedirect(route('admin.semesters.show', $cycle));
+
+        $cycle = $cycle->fresh();
+        $this->assertSame(InternshipCycle::STATUS_ACTIVE, $cycle->status);
+        $this->assertSame(18, $cycle->duration_weeks);
+    }
+
     public function test_active_semester_is_attached_to_placement_and_generated_logbooks(): void
     {
         Storage::fake('local');

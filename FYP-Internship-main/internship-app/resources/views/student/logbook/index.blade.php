@@ -8,13 +8,25 @@
     </x-slot>
 
     <div class="min-h-screen bg-slate-50 py-8">
-        <div class="mx-auto max-w-7xl space-y-5 px-4 sm:px-6 lg:px-8">
+        <div x-data="{ extensionOpen: false, extensionAction: '', extensionWeek: '' }" class="mx-auto max-w-7xl space-y-5 px-4 sm:px-6 lg:px-8">
             @if(session('success'))
                 <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">{{ session('success') }}</div>
             @endif
             @if(session('error'))
                 <div class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">{{ session('error') }}</div>
             @endif
+
+            <form method="GET" action="{{ route('student.logbook.index') }}" class="grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-[1fr_220px_auto_auto]">
+                <label><span class="sr-only">Search week</span><input type="search" name="search" value="{{ request('search') }}" placeholder="Search week number..." class="w-full rounded-xl border-slate-300 text-sm"></label>
+                <label><span class="sr-only">Logbook status</span><select name="status" class="w-full rounded-xl border-slate-300 text-sm">
+                    <option value="">All statuses</option>
+                    @foreach(['approved' => 'Approved & signed', 'pending' => 'Pending review', 'rejected' => 'Needs revision', 'open' => 'Open', 'overdue_locked' => 'Overdue / locked', 'scheduled' => 'Scheduled', 'not_generated' => 'Not generated'] as $value => $label)
+                        <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
+                    @endforeach
+                </select></label>
+                <button class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white">Filter</button>
+                <a href="{{ route('student.logbook.index') }}" class="rounded-xl border border-slate-300 px-4 py-2.5 text-center text-sm font-bold text-slate-700">Reset</a>
+            </form>
 
             <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
                 <table class="w-full min-w-[900px] text-left">
@@ -28,8 +40,9 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 text-slate-600">
-                        @for($week = 1; $week <= $totalWeeks; $week++)
-                            @php($logbook = $logbooks->get($week))
+                        @forelse($weekEntries as $entry)
+                            @php($week = $entry['week'])
+                            @php($logbook = $entry['logbook'])
                             <tr class="align-top transition hover:bg-slate-50">
                                 <td class="p-5 font-bold text-slate-900">Week {{ $week }}</td>
                                 <td class="p-5">
@@ -85,19 +98,35 @@
                                             @elseif($logbook->extension_status === 'rejected')
                                                 <p class="text-xs text-rose-700">{{ $logbook->extension_decision_note }}</p>
                                             @else
-                                                <form method="POST" action="{{ route('student.logbook.extension.request', $logbook) }}" class="flex max-w-sm flex-col items-end gap-2">
-                                                    @csrf
-                                                    <textarea name="extension_reason" rows="2" required class="w-72 rounded-lg border-slate-300 bg-white text-sm text-slate-900" placeholder="Explain why an extension is needed"></textarea>
-                                                    <button class="rounded-lg bg-amber-600 px-3 py-2 text-xs font-bold uppercase text-white hover:bg-amber-500">Request extension</button>
-                                                </form>
+                                                <button type="button" @click="extensionAction = '{{ route('student.logbook.extension.request', $logbook) }}'; extensionWeek = '{{ $week }}'; extensionOpen = true" class="rounded-lg bg-amber-600 px-3 py-2 text-xs font-bold uppercase text-white hover:bg-amber-500">Request extension</button>
                                             @endif
                                         @endif
                                     </div>
                                 </td>
                             </tr>
-                        @endfor
+                        @empty
+                            <tr><td colspan="5" class="p-10 text-center text-sm text-slate-500">No weekly logbooks match your search or filter.</td></tr>
+                        @endforelse
                     </tbody>
                 </table>
+            </div>
+            @if($weekEntries->hasPages())
+                <div>{{ $weekEntries->links() }}</div>
+            @endif
+
+            <div x-show="extensionOpen" x-cloak @keydown.escape.window="extensionOpen = false" class="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="extension-title">
+                <button type="button" @click="extensionOpen = false" class="absolute inset-0 bg-slate-900/60" aria-label="Close extension request"></button>
+                <div x-show="extensionOpen" x-transition class="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+                    <div class="flex items-start justify-between gap-4">
+                        <div><p class="text-xs font-bold uppercase tracking-wider text-amber-600">Overdue / locked</p><h3 id="extension-title" class="mt-1 text-xl font-bold text-slate-900">Request extension for Week <span x-text="extensionWeek"></span></h3></div>
+                        <button type="button" @click="extensionOpen = false" class="rounded-lg p-2 text-slate-500 hover:bg-slate-100" aria-label="Close">×</button>
+                    </div>
+                    <form method="POST" :action="extensionAction" class="mt-5 space-y-4">
+                        @csrf
+                        <label><span class="mb-2 block text-sm font-bold text-slate-700">Why is an extension necessary?</span><textarea name="extension_reason" rows="4" required class="w-full rounded-xl border-slate-300 text-sm" placeholder="Briefly explain the circumstances and the time you need."></textarea></label>
+                        <div class="flex justify-end gap-3"><button type="button" @click="extensionOpen = false" class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-bold text-slate-700">Cancel</button><button class="rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-amber-700">Send request</button></div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

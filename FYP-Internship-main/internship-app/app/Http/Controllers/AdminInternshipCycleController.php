@@ -32,7 +32,9 @@ class AdminInternshipCycleController extends Controller
 
     public function store(Request $request)
     {
-        $cycle = InternshipCycle::create($this->validatedCycle($request));
+        $cycle = InternshipCycle::create($this->validatedCycle($request) + [
+            'status' => InternshipCycle::STATUS_DRAFT,
+        ]);
 
         return redirect()->route('admin.semesters.show', $cycle)
             ->with('success', 'Semester created as a draft. Add students before activating it.');
@@ -72,14 +74,20 @@ class AdminInternshipCycleController extends Controller
 
     public function edit(InternshipCycle $semester)
     {
-        abort_unless($semester->status === InternshipCycle::STATUS_DRAFT, 409);
+        abort_unless(in_array($semester->status, [
+            InternshipCycle::STATUS_DRAFT,
+            InternshipCycle::STATUS_ACTIVE,
+        ], true), 409);
 
         return view('admin.semesters.create', compact('semester'));
     }
 
     public function update(Request $request, InternshipCycle $semester)
     {
-        abort_unless($semester->status === InternshipCycle::STATUS_DRAFT, 409);
+        abort_unless(in_array($semester->status, [
+            InternshipCycle::STATUS_DRAFT,
+            InternshipCycle::STATUS_ACTIVE,
+        ], true), 409);
         $semester->update($this->validatedCycle($request, $semester));
 
         return redirect()->route('admin.semesters.show', $semester)
@@ -250,7 +258,6 @@ class AdminInternshipCycleController extends Controller
         ]) + [
             'deadline_weekday' => 5,
             'deadline_time' => '23:59',
-            'status' => InternshipCycle::STATUS_DRAFT,
         ];
     }
 }

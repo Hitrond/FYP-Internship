@@ -304,41 +304,6 @@
                 @endforeach
             </div>
 
-            <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                <div class="border-b border-slate-100 px-6 py-4">
-                    <h3 class="font-bold text-slate-900">Latest assigned-student logbooks</h3>
-                    <p class="text-sm text-slate-500">Read weekly progress, attendance, evidence, and Industrial Supervisor feedback.</p>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
-                        <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
-                            <tr>
-                                <th class="px-6 py-3">Student</th>
-                                <th class="px-6 py-3">Week</th>
-                                <th class="px-6 py-3">Status</th>
-                                <th class="px-6 py-3">Hours</th>
-                                <th class="px-6 py-3">Updated</th>
-                                <th class="px-6 py-3 text-right">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            @forelse($recentLogbooks as $logbook)
-                                <tr>
-                                    <td class="px-6 py-4 font-semibold text-slate-900">{{ $logbook->student->name }}</td>
-                                    <td class="px-6 py-4">Week {{ $logbook->week_number }}</td>
-                                    <td class="px-6 py-4 capitalize">{{ $logbook->status }}</td>
-                                    <td class="px-6 py-4">{{ $logbook->verified_hours !== null ? number_format($logbook->verified_hours, 2) : number_format($logbook->rendered_hours, 2) }}</td>
-                                    <td class="px-6 py-4 text-slate-500">{{ $logbook->updated_at->format('M d, Y') }}</td>
-                                    <td class="px-6 py-4 text-right"><a href="{{ route('logbooks.show', $logbook) }}" class="font-semibold text-indigo-600 hover:text-indigo-800">View logbook</a></td>
-                                </tr>
-                            @empty
-                                <tr><td colspan="6" class="px-6 py-10 text-center text-slate-500">No student logbooks available yet.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-slate-200">
                 <div class="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>

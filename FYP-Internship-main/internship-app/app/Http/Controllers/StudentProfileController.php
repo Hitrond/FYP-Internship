@@ -33,6 +33,11 @@ class StudentProfileController extends Controller
         $validated = $request->validate([
             'name' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
+            'full_name' => 'nullable|string|max:255',
+            'tp_number' => 'nullable|string|max:50',
+            'course_name' => 'nullable|string|max:255',
+            'specialization' => 'nullable|string|max:255',
+            'intake_code' => 'nullable|string|max:50',
             'personal_email' => 'nullable|email|max:255',
             'contact_number' => 'nullable|string|max:30',
             'internship_status' => 'nullable|string|in:looking,interviewing,secured',
@@ -61,6 +66,11 @@ class StudentProfileController extends Controller
         }
 
         $profileData = Arr::only($validated, [
+            'full_name',
+            'tp_number',
+            'course_name',
+            'specialization',
+            'intake_code',
             'personal_email',
             'contact_number',
             'internship_status',

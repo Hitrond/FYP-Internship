@@ -12,8 +12,10 @@
                 <p class="mt-1 text-sm text-slate-500">{{ $semester->intake_code }} · {{ $semester->academic_year }} · {{ $semester->duration_weeks }} weeks · missed after {{ ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][$semester->deadline_weekday ?? 5] }} {{ \Illuminate\Support\Carbon::parse($semester->deadline_time ?? '23:59')->format('H:i') }}</p>
             </div>
             <div class="flex flex-wrap gap-2">
+                @if (in_array($semester->status, ['draft', 'active'], true))
+                    <a href="{{ route('admin.semesters.edit', $semester) }}" class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50">Edit semester settings</a>
+                @endif
                 @if ($semester->status === 'draft')
-                    <a href="{{ route('admin.semesters.edit', $semester) }}" class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50">Edit settings</a>
                     <form method="POST" action="{{ route('admin.semesters.activate', $semester) }}">
                         @csrf @method('PATCH')
                         <button class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-700">Activate semester</button>

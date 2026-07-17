@@ -125,12 +125,6 @@ class MentorDashboardController extends Controller
             ->latest('submitted_at')
             ->get()
             ->filter(fn (PerformanceEvaluation $evaluation) => $evaluation->hasConcern());
-        $recentLogbooks = Logbook::with('student')
-            ->whereIn('user_id', $assignedStudents->pluck('id'))
-            ->when($activeCycle, fn ($query) => $query->where('internship_cycle_id', $activeCycle->id))
-            ->latest('updated_at')
-            ->take(8)
-            ->get();
         $pendingExtensions = Logbook::with('student')
             ->whereIn('user_id', $assignedStudents->pluck('id'))
             ->when($activeCycle, fn ($query) => $query->where('internship_cycle_id', $activeCycle->id))
@@ -154,7 +148,6 @@ class MentorDashboardController extends Controller
             'assignedStudents',
             'attendanceAlerts',
             'evaluationAlerts',
-            'recentLogbooks',
             'pendingExtensions',
             'activeCycle',
             'cycles',

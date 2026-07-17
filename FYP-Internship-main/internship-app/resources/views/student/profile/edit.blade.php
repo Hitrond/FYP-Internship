@@ -48,11 +48,11 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <x-input-label for="full_name" :value="__('Full Name')" />
-                                <input id="full_name" type="text" class="mt-1 block w-full" style="width: 100%; min-height: 2.5rem; padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; background-color: #f8fafc;" value="{{ $user->profile->full_name ?? $user->name }}" readonly />
+                                <input id="full_name" name="full_name" type="text" class="mt-1 block w-full rounded-md border-gray-300" value="{{ old('full_name', $user->profile->full_name ?? $user->name) }}" />
                             </div>
                             <div>
                                 <x-input-label for="tp_number" :value="__('TP Number')" />
-                                <input id="tp_number" type="text" class="mt-1 block w-full" style="width: 100%; min-height: 2.5rem; padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; background-color: #f8fafc;" value="{{ $user->profile->tp_number ?? '' }}" readonly />
+                                <input id="tp_number" name="tp_number" type="text" class="mt-1 block w-full rounded-md border-gray-300" value="{{ old('tp_number', $user->profile->tp_number ?? '') }}" />
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -72,15 +72,15 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <x-input-label for="course_name" :value="__('Course Name')" />
-                                <input id="course_name" type="text" class="mt-1 block w-full" style="width: 100%; min-height: 2.5rem; padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; background-color: #f8fafc;" value="{{ $user->profile->course_name ?? '' }}" readonly />
+                                <input id="course_name" name="course_name" type="text" class="mt-1 block w-full rounded-md border-gray-300" value="{{ old('course_name', $user->profile->course_name ?? '') }}" />
                             </div>
                             <div>
                                 <x-input-label for="specialization" :value="__('Specialization')" />
-                                <input id="specialization" type="text" class="mt-1 block w-full" style="width: 100%; min-height: 2.5rem; padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; background-color: #f8fafc;" value="{{ $user->profile->specialization ?? '' }}" readonly />
+                                <input id="specialization" name="specialization" type="text" class="mt-1 block w-full rounded-md border-gray-300" value="{{ old('specialization', $user->profile->specialization ?? '') }}" />
                             </div>
                             <div>
                                 <x-input-label for="intake_code" :value="__('Intake Code')" />
-                                <input id="intake_code" type="text" class="mt-1 block w-full" style="width: 100%; min-height: 2.5rem; padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; background-color: #f8fafc;" value="{{ $user->profile->intake_code ?? '' }}" readonly />
+                                <input id="intake_code" name="intake_code" type="text" class="mt-1 block w-full rounded-md border-gray-300" value="{{ old('intake_code', $user->profile->intake_code ?? '') }}" />
                             </div>
                         </div>
 

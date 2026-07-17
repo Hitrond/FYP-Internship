@@ -8,7 +8,7 @@
             </div>
             <div class="flex flex-wrap gap-3">
                 <a href="{{ route('admin.clearances.index', $selectedCycle ? ['semester' => $selectedCycle->id] : []) }}" class="inline-flex items-center rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-sm font-bold text-indigo-700 shadow-sm hover:bg-indigo-100">
-                    Admin Clearance
+                    Placement & Supervisor Accounts
                 </a>
                 <a href="{{ route('admin.users.create') }}" class="inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50">
                     Add user
@@ -189,46 +189,6 @@
                 </div>
             </section>
 
-            <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div class="flex flex-col gap-3 border-b border-slate-200 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h3 class="font-bold text-slate-900">Recent placements</h3>
-                        <p class="mt-1 text-sm text-slate-500">{{ $stats['pending_placements'] }} currently awaiting Academic Mentor review.</p>
-                    </div>
-                    <a href="{{ route('admin.clearances.index') }}" class="text-sm font-bold text-indigo-600 hover:text-indigo-800">Open Admin Clearance &rarr;</a>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
-                        <thead class="bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500">
-                            <tr>
-                                <th class="px-6 py-4">Student</th>
-                                <th class="px-6 py-4">Company</th>
-                                <th class="px-6 py-4">Academic Mentor</th>
-                                <th class="px-6 py-4">Industrial Supervisor</th>
-                                <th class="px-6 py-4">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            @forelse ($recentPlacements as $placement)
-                                <tr class="hover:bg-slate-50">
-                                    <td class="whitespace-nowrap px-6 py-4 font-bold text-slate-900">{{ $placement->student?->name }}</td>
-                                    <td class="px-6 py-4 text-slate-600">{{ $placement->company_name }}</td>
-                                    <td class="px-6 py-4 text-slate-600">{{ $placement->student?->mentor?->name ?? 'Unassigned' }}</td>
-                                    <td class="px-6 py-4 text-slate-600">{{ $placement->student?->supervisor?->name ?? 'Not provisioned' }}</td>
-                                    <td class="px-6 py-4">
-                                        <span class="rounded-full px-2.5 py-1 text-xs font-bold capitalize
-                                            {{ in_array($placement->status, ['approved', 'completed'], true) ? 'bg-emerald-100 text-emerald-700' : ($placement->status === 'rejected' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700') }}">
-                                            {{ $placement->status }}
-                                        </span>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr><td colspan="5" class="px-6 py-10 text-center text-slate-500">No placements have been submitted.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </section>
         </div>
     </div>
 </x-app-layout>

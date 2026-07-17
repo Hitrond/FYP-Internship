@@ -9,21 +9,10 @@
 
     <div class="min-h-screen bg-slate-50 py-10">
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
-            <form method="GET" action="{{ route('supervisor.dashboard') }}" class="grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-[1fr_220px_auto_auto]">
+            <form method="GET" action="{{ route('supervisor.dashboard') }}" class="grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-[1fr_auto_auto]">
                 <label>
                     <span class="sr-only">Search students</span>
                     <input type="search" name="search" value="{{ request('search') }}" placeholder="Search assigned student / email / TP..." class="w-full rounded-xl border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                </label>
-                <label>
-                    <span class="sr-only">Recent logbook status</span>
-                    <select name="logbook_status" class="w-full rounded-xl border-slate-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        <option value="">All recent logbooks</option>
-                        <option value="pending" @selected(request('logbook_status') === 'pending')>Pending</option>
-                        <option value="approved" @selected(request('logbook_status') === 'approved')>Approved</option>
-                        <option value="rejected" @selected(request('logbook_status') === 'rejected')>Rejected</option>
-                        <option value="open" @selected(request('logbook_status') === 'open')>Open</option>
-                        <option value="overdue_locked" @selected(request('logbook_status') === 'overdue_locked')>Missed / locked</option>
-                    </select>
                 </label>
                 <button class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white hover:bg-slate-700">Filter</button>
                 <a href="{{ route('supervisor.dashboard') }}" class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-center text-sm font-bold text-slate-700 hover:bg-slate-50">Reset</a>
@@ -59,41 +48,6 @@
                 </a>
             </div>
 
-            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div class="border-b border-slate-100 px-6 py-4">
-                    <h3 class="font-bold text-slate-900">Recent student logbooks</h3>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
-                        <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
-                            <tr>
-                                <th class="px-6 py-3">Student</th>
-                                <th class="px-6 py-3">Week</th>
-                                <th class="px-6 py-3">Status</th>
-                                <th class="px-6 py-3">Hours</th>
-                                <th class="px-6 py-3">Updated</th>
-                                <th class="px-6 py-3 text-right">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            @forelse($recentLogbooks as $logbook)
-                                <tr>
-                                    <td class="px-6 py-4 font-semibold text-slate-900">{{ $logbook->student->name }}</td>
-                                    <td class="px-6 py-4 text-slate-700">Week {{ $logbook->week_number }}</td>
-                                    <td class="px-6 py-4 capitalize text-slate-700">{{ $logbook->status }}</td>
-                                    <td class="px-6 py-4 text-slate-700">{{ $logbook->verified_hours !== null ? number_format($logbook->verified_hours, 2) : number_format($logbook->rendered_hours, 2) }}</td>
-                                    <td class="px-6 py-4 text-slate-500">{{ $logbook->updated_at->format('M d, Y') }}</td>
-                                    <td class="px-6 py-4 text-right">
-                                        <a href="{{ route('logbooks.show', $logbook) }}" class="font-semibold text-indigo-600 hover:text-indigo-800">View logbook</a>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr><td colspan="6" class="px-6 py-10 text-center text-slate-500">No student logbooks yet.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         </div>
     </div>
 </x-app-layout>
