@@ -24,7 +24,10 @@ return [
 
     'brevo' => [
         'key' => env('BREVO_API_KEY'),
-        'use_api' => env('BREVO_API_ENABLED', env('RENDER', false)),
+        'use_api' => filter_var(
+            env('BREVO_API_ENABLED', env('RENDER', false)),
+            FILTER_VALIDATE_BOOLEAN
+        ) && filled(env('BREVO_API_KEY')),
     ],
 
     'ses' => [

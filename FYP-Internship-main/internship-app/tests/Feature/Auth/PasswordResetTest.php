@@ -57,6 +57,26 @@ class PasswordResetTest extends TestCase
         });
     }
 
+    public function test_brevo_failure_returns_a_validation_error_instead_of_server_error(): void
+    {
+        config([
+            'services.brevo.key' => 'invalid-api-key',
+            'services.brevo.use_api' => true,
+            'mail.from.address' => 'verified@example.com',
+        ]);
+        Http::fake([
+            'api.brevo.com/*' => Http::response(['message' => 'Unauthorized'], 401),
+        ]);
+        $user = User::factory()->create();
+
+        $this->from('/forgot-password')
+            ->post('/forgot-password', ['email' => $user->email])
+            ->assertRedirect('/forgot-password')
+            ->assertSessionHasErrors([
+                'email' => 'The password reset email could not be sent. Please try again later or contact the administrator.',
+            ]);
+    }
+
     public function test_reset_password_screen_can_be_rendered(): void
     {
         Notification::fake();

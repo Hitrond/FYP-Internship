@@ -17,6 +17,10 @@ services:
         value: production
       - key: APP_DEBUG
         value: "false"
+      - key: APP_KEY
+        sync: false
+      - key: APP_URL
+        value: https://wims-sus.onrender.com
       - key: LOG_CHANNEL
         value: stderr
       - key: DB_CONNECTION
@@ -49,3 +53,11 @@ services:
         value: sync
       - key: MAIL_MAILER
         value: log
+      - key: MAIL_FROM_ADDRESS
+        value: admininterntrack@gmail.com
+      - key: MAIL_FROM_NAME
+        value: InternTrack
+      - key: BREVO_API_ENABLED
+        value: "true"
+      - key: BREVO_API_KEY
+        sync: false
