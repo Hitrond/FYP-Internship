@@ -75,11 +75,6 @@
                 </div>
             </div>
 
-            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
-                <div class="max-w-xl">
-                    @include('profile.partials.delete-user-form')
-                </div>
-            </div>
         </div>
     </div>
 </x-app-layout>

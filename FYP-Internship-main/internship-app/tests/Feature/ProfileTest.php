@@ -61,22 +61,18 @@ class ProfileTest extends TestCase
         $this->assertNotNull($user->refresh()->email_verified_at);
     }
 
-    public function test_user_can_delete_their_account(): void
+    public function test_user_cannot_delete_their_own_account(): void
     {
         $user = User::factory()->create();
 
-        $response = $this
-            ->actingAs($user)
+        $this->actingAs($user)
             ->delete('/profile', [
                 'password' => 'password',
-            ]);
+            ])
+            ->assertForbidden();
 
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/');
-
-        $this->assertGuest();
-        $this->assertNull($user->fresh());
+        $this->assertAuthenticatedAs($user);
+        $this->assertNotNull($user->fresh());
     }
 
     public function test_student_can_edit_previously_read_only_profile_fields(): void
@@ -101,21 +97,15 @@ class ProfileTest extends TestCase
         ]);
     }
 
-    public function test_correct_password_must_be_provided_to_delete_account(): void
+    public function test_admin_can_delete_another_users_account(): void
     {
-        $user = User::factory()->create();
+        $admin = User::factory()->create(['role' => 'admin']);
+        $user = User::factory()->create(['role' => 'student']);
 
-        $response = $this
-            ->actingAs($user)
-            ->from('/profile')
-            ->delete('/profile', [
-                'password' => 'wrong-password',
-            ]);
+        $this->actingAs($admin)
+            ->delete(route('admin.users.destroy', $user))
+            ->assertRedirect(route('admin.users.index'));
 
-        $response
-            ->assertSessionHasErrorsIn('userDeletion', 'password')
-            ->assertRedirect('/profile');
-
-        $this->assertNotNull($user->fresh());
+        $this->assertNull($user->fresh());
     }
 }
