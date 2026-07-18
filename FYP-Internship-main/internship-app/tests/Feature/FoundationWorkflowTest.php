@@ -50,6 +50,11 @@ class FoundationWorkflowTest extends TestCase
             ->get(route('supervisor.logbooks.history'))
             ->assertOk()
             ->assertSee('Please include measurable outcomes.');
+
+        $this->actingAs($supervisor)
+            ->get(route('logbooks.show', $logbook))
+            ->assertOk()
+            ->assertSee('border-red-200 bg-red-50 text-red-800', false);
     }
 
     public function test_supervisor_can_verify_total_hours_without_daily_attendance_entries(): void
@@ -263,6 +268,13 @@ class FoundationWorkflowTest extends TestCase
         $this->assertSame($supervisor->id, $logbook->approved_by_id);
         $this->assertNotNull($logbook->approved_at);
         $this->assertSame('Example Company', $logbook->approval_company_name);
+
+        $logbook->update(['supervisor_remarks' => 'Good progress.']);
+
+        $this->actingAs($supervisor)
+            ->get(route('logbooks.show', $logbook))
+            ->assertOk()
+            ->assertSee('border-emerald-200 bg-emerald-50 text-emerald-800', false);
 
         foreach ([$student, $supervisor, $mentor] as $viewer) {
             $route = $viewer->isStudent()

@@ -18,7 +18,11 @@
     <div class="min-h-screen bg-slate-50 py-8">
         <div class="mx-auto max-w-5xl space-y-6 px-4 sm:px-6 lg:px-8">
             @if($logbook->supervisor_remarks)
-                <div class="rounded-xl border border-red-200 bg-red-50 p-5 text-red-800">
+                <div @class([
+                    'rounded-xl border p-5',
+                    'border-emerald-200 bg-emerald-50 text-emerald-800' => $logbook->status === 'approved',
+                    'border-red-200 bg-red-50 text-red-800' => $logbook->status !== 'approved',
+                ])>
                     <p class="font-bold">Industrial Supervisor feedback</p>
                     <p class="mt-1 text-sm">{{ $logbook->supervisor_remarks }}</p>
                 </div>
