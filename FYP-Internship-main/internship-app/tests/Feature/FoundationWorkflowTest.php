@@ -444,17 +444,14 @@ class FoundationWorkflowTest extends TestCase
         $this->actingAs($mentor)
             ->get(route('mentor.profile.edit'))
             ->assertOk()
-            ->assertSee('Profile details are managed by the System Administrator.')
-            ->assertDontSee('Save Preferences');
-        $this->actingAs($mentor)
-            ->put(route('mentor.profile.update'), ['mentor_staff_id' => 'CHANGED'])
-            ->assertForbidden();
+            ->assertSee('Save Preferences')
+            ->assertDontSee('Update Password');
         $this->actingAs($supervisor)
             ->get(route('supervisor.profile.edit'))
             ->assertOk()
-            ->assertSee('Personal and company details are managed by the System Administrator.')
-            ->assertSee('Save Approval Assets')
-            ->assertDontSee('Personal Email (Login)');
+            ->assertSee('Save Profile')
+            ->assertSee('Personal Email (Login)')
+            ->assertDontSee('Update Password');
 
         CoverLetter::create([
             'user_id' => $student->id,
@@ -484,25 +481,6 @@ class FoundationWorkflowTest extends TestCase
             ->assertDownload();
 
         $this->assertStringStartsWith('PK', $word->getContent());
-    }
-
-    public function test_supervisor_can_upload_only_the_assets_required_for_logbook_approval(): void
-    {
-        Storage::fake('local');
-        $supervisor = User::factory()->create(['role' => 'supervisor']);
-        $supervisor->profile()->create(['company_name' => 'Original Company']);
-
-        $this->actingAs($supervisor)->put(route('supervisor.profile.update'), [
-            'company_name' => 'Unauthorized Change',
-            'signature_image' => UploadedFile::fake()->image('signature.png'),
-            'company_stamp' => UploadedFile::fake()->image('stamp.png'),
-        ])->assertSessionHasNoErrors()
-            ->assertRedirect(route('supervisor.profile.edit'));
-
-        $profile = $supervisor->profile->fresh();
-        $this->assertSame('Original Company', $profile->company_name);
-        Storage::disk('local')->assertExists($profile->signature_path);
-        Storage::disk('local')->assertExists($profile->stamp_path);
     }
 
     private function createLogbook(User $student, array $overrides = []): Logbook

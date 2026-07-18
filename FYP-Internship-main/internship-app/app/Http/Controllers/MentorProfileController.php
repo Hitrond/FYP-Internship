@@ -16,6 +16,21 @@ class MentorProfileController extends Controller
 
     public function update(Request $request)
     {
-        abort(403, 'Academic Mentor profile details can only be managed by an administrator.');
+        $validated = $request->validate([
+            'mentor_staff_id' => ['nullable', 'string', 'max:50'],
+            'mentor_department' => ['nullable', 'string', 'max:255'],
+            'notify_email_missed_logbook' => ['nullable', 'boolean'],
+            'notify_dashboard_only' => ['nullable', 'boolean'],
+        ]);
+
+        $validated['notify_email_missed_logbook'] = $request->boolean('notify_email_missed_logbook');
+        $validated['notify_dashboard_only'] = $request->boolean('notify_dashboard_only');
+
+        $request->user()->profile()->updateOrCreate(
+            ['user_id' => $request->user()->id],
+            $validated
+        );
+
+        return redirect()->route('mentor.profile.edit')->with('status', 'profile-updated');
     }
 }
