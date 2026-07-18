@@ -79,6 +79,23 @@ class FoundationWorkflowTest extends TestCase
             ->assertSee('Applied Laravel and testing skills.');
     }
 
+    public function test_unverified_hours_use_a_red_status_badge(): void
+    {
+        $supervisor = User::factory()->create(['role' => 'supervisor']);
+        $student = User::factory()->create([
+            'role' => 'student',
+            'supervisor_id' => $supervisor->id,
+        ]);
+        $logbook = $this->createLogbook($student, ['verified_minutes' => null]);
+
+        $this->actingAs($supervisor)
+            ->get(route('logbooks.show', $logbook))
+            ->assertOk()
+            ->assertSee('Supervisor verified:')
+            ->assertSee('Not verified')
+            ->assertSee('bg-red-50 text-red-800', false);
+    }
+
     public function test_approved_logbook_cannot_be_edited(): void
     {
         $student = User::factory()->create(['role' => 'student']);

@@ -37,7 +37,11 @@
                         <span class="rounded-lg bg-indigo-50 px-3 py-2 text-indigo-800">
                             Student declared: <strong>{{ number_format($logbook->rendered_hours, 2) }} hrs</strong>
                         </span>
-                        <span class="rounded-lg bg-emerald-50 px-3 py-2 text-emerald-800">
+                        <span @class([
+                            'rounded-lg px-3 py-2',
+                            'bg-emerald-50 text-emerald-800' => $logbook->verified_hours !== null,
+                            'bg-red-50 text-red-800' => $logbook->verified_hours === null,
+                        ])>
                             Supervisor verified:
                             <strong>{{ $logbook->verified_hours !== null ? number_format($logbook->verified_hours, 2).' hrs' : 'Not verified' }}</strong>
                         </span>
