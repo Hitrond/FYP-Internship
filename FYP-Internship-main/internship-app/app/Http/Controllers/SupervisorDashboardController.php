@@ -29,6 +29,11 @@ class SupervisorDashboardController extends Controller
         $pendingLogbooks = Logbook::whereIn('user_id', $studentIds)
             ->where('status', 'pending')
             ->count();
+        $recentLogbooks = Logbook::with('student.profile')
+            ->whereIn('user_id', $studentIds)
+            ->latest('updated_at')
+            ->limit(5)
+            ->get();
         $attendanceIssues = Logbook::whereIn('user_id', $studentIds)
             ->where('status', 'rejected')
             ->where('rejection_category', 'attendance')
@@ -44,6 +49,7 @@ class SupervisorDashboardController extends Controller
         return view('supervisor.dashboard', compact(
             'students',
             'pendingLogbooks',
+            'recentLogbooks',
             'attendanceIssues',
             'pendingEvaluations',
             'pendingClearances',

@@ -48,6 +48,35 @@
                 </a>
             </div>
 
+            <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+                    <div>
+                        <h3 class="font-bold text-slate-900">Recent logbooks</h3>
+                        <p class="text-sm text-slate-500">Recently updated weekly records from assigned students.</p>
+                    </div>
+                    <a href="{{ route('supervisor.logbooks.index') }}" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800">View pending logbooks</a>
+                </div>
+                <div class="divide-y divide-slate-100">
+                    @forelse ($recentLogbooks as $logbook)
+                        <div class="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <p class="font-semibold text-slate-900">{{ $logbook->student->name }} - Week {{ $logbook->week_number }}</p>
+                                <p class="mt-1 text-sm text-slate-500">
+                                    {{ ucfirst(str_replace('_', ' ', $logbook->status)) }}
+                                    <span aria-hidden="true">&middot;</span>
+                                    Updated {{ $logbook->updated_at->diffForHumans() }}
+                                </p>
+                            </div>
+                            <a href="{{ route('logbooks.show', $logbook) }}" class="inline-flex items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-bold text-indigo-700 hover:bg-indigo-100">
+                                View logbook
+                            </a>
+                        </div>
+                    @empty
+                        <p class="px-6 py-8 text-center text-sm text-slate-500">No logbooks are available for the assigned students yet.</p>
+                    @endforelse
+                </div>
+            </section>
+
         </div>
     </div>
 </x-app-layout>
