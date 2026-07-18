@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Channels\BrevoWorkflowChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -20,7 +21,10 @@ class WorkflowAlertNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        return [
+            'database',
+            config('services.brevo.use_api') ? BrevoWorkflowChannel::class : 'mail',
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage

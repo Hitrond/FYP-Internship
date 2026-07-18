@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Notifications\WorkflowAlertNotification;
 use App\Services\PlacementTimelineService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
@@ -14,6 +15,71 @@ use Tests\TestCase;
 class NotificationWorkflowTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_workflow_alerts_use_brevo_api_when_configured(): void
+    {
+        config([
+            'services.brevo.key' => 'test-api-key',
+            'services.brevo.use_api' => true,
+            'mail.from.address' => 'verified@example.test',
+            'mail.from.name' => 'InternTrack',
+        ]);
+        Http::fake([
+            'api.brevo.com/*' => Http::response(['messageId' => '<workflow@brevo>'], 201),
+        ]);
+        $mentor = User::factory()->create(['role' => 'mentor']);
+
+        $mentor->notifyNow(new WorkflowAlertNotification(
+            'Overdue logbook alert',
+            'A Student missed a weekly submission deadline.',
+            route('mentor.dashboard'),
+            'danger',
+        ));
+
+        $this->assertCount(1, $mentor->notifications);
+        Http::assertSent(fn ($request) => $request->url() === 'https://api.brevo.com/v3/smtp/email'
+            && $request->hasHeader('api-key', 'test-api-key')
+            && $request['to'][0]['email'] === $mentor->email
+            && $request['subject'] === 'Overdue logbook alert');
+    }
+
+    public function test_pending_logbook_submission_notifies_assigned_supervisor(): void
+    {
+        Notification::fake();
+        $supervisor = User::factory()->create(['role' => 'supervisor']);
+        $student = User::factory()->create([
+            'role' => 'student',
+            'supervisor_id' => $supervisor->id,
+        ]);
+        Logbook::create([
+            'user_id' => $student->id,
+            'week_number' => 1,
+            'start_date' => '2026-06-01',
+            'end_date' => '2026-06-05',
+            'status' => 'open',
+        ]);
+
+        $this->actingAs($student)->post(route('student.logbook.store'), [
+            'week_number' => 1,
+            'start_date' => '2026-06-01',
+            'end_date' => '2026-06-05',
+            'objectives' => 'Complete assigned development tasks.',
+            'content' => 'Applied Laravel and testing skills.',
+            'attendance' => collect(range(0, 4))->map(fn (int $day) => [
+                'date' => \Carbon\Carbon::parse('2026-06-01')->addDays($day)->format('Y-m-d'),
+                'status' => 'present',
+                'rendered_hours' => 8,
+                'note' => null,
+            ])->all(),
+        ])->assertSessionHasNoErrors();
+
+        Notification::assertSentTo(
+            $supervisor,
+            WorkflowAlertNotification::class,
+            fn ($notification) => str_contains($notification->title, 'Pending logbook approval')
+                && $notification->url === route('supervisor.logbooks.index')
+        );
+    }
 
     public function test_overdue_logbook_notifies_student_and_academic_mentor_once(): void
     {

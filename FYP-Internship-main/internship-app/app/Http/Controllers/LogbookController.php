@@ -159,6 +159,8 @@ class LogbookController extends Controller
             $logbook = Auth::user()->logbooks()->create($data);
         }
 
+        $this->notifySupervisorOfPendingLogbook($logbook);
+
         return redirect()->route('student.logbook.show', $logbook)
             ->with('success', 'Week '.$validated['week_number'].' submitted for verification.');
     }
@@ -227,6 +229,8 @@ class LogbookController extends Controller
         }
 
         $logbook->update($updateData);
+
+        $this->notifySupervisorOfPendingLogbook($logbook);
 
         if ($oldEvidencePath) {
             Storage::disk('public')->delete($oldEvidencePath);
@@ -530,6 +534,22 @@ class LogbookController extends Controller
         } catch (Throwable $exception) {
             report($exception);
         }
+    }
+
+    private function notifySupervisorOfPendingLogbook(Logbook $logbook): void
+    {
+        $logbook->loadMissing('student.supervisor');
+        $student = $logbook->student;
+
+        $this->notifySafely(
+            $student?->supervisor,
+            new WorkflowAlertNotification(
+                'Pending logbook approval: '.$student?->name,
+                $student?->name.' submitted Week '.$logbook->week_number.' for your review and approval.',
+                route('supervisor.logbooks.index'),
+                'warning',
+            )
+        );
     }
 
     public function downloadMcEvidence(Logbook $logbook, int $day)

@@ -106,25 +106,39 @@ class PlacementTimelineService
             return;
         }
 
-        try {
-            $student->notify(new WorkflowAlertNotification(
+        $this->notifySafely(
+            $student,
+            new WorkflowAlertNotification(
                 'Week '.$logbook->week_number.' logbook is overdue',
                 'Your submission deadline has passed. Request an extension from your Academic Mentor to unlock this week.',
                 route('student.logbook.index'),
                 'danger',
-            ));
-
-            $student->mentor?->notify(new WorkflowAlertNotification(
+            )
+        );
+        $this->notifySafely(
+            $student->mentor,
+            new WorkflowAlertNotification(
                 'Overdue logbook alert: '.$student->name,
                 $student->name.' missed the Week '.$logbook->week_number.' submission deadline.',
                 route('mentor.dashboard'),
                 'danger',
-            ));
+            )
+        );
+
+        $logbook->forceFill(['overdue_notified_at' => now()])->saveQuietly();
+    }
+
+    private function notifySafely(?object $recipient, WorkflowAlertNotification $notification): void
+    {
+        if (! $recipient) {
+            return;
+        }
+
+        try {
+            $recipient->notify($notification);
         } catch (Throwable $exception) {
             report($exception);
         }
-
-        $logbook->forceFill(['overdue_notified_at' => now()])->saveQuietly();
     }
 
     private function deadlineFor(Carbon $weekEnd, PlacementClearance $placement): Carbon
