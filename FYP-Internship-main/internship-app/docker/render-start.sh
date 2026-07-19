@@ -13,4 +13,8 @@ php artisan db:seed --class=SusApprovalAssetsSeeder --force
 php artisan config:cache
 php artisan view:cache
 
-exec php artisan serve --host=0.0.0.0 --port="${PORT:-10000}"
+exec php \
+    -d display_errors=Off \
+    -d upload_max_filesize=105M \
+    -d post_max_size=650M \
+    artisan serve --host=0.0.0.0 --port="${PORT:-10000}"

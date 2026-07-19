@@ -148,7 +148,7 @@ class StudentCompanyTrackerController extends Controller
             'last_contacted_on' => ['nullable', 'date'],
             'next_followup_on' => ['nullable', 'date'],
             'job_url' => ['nullable', 'url', 'max:2048'],
-            'offer_letter' => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
+            'offer_letter' => ['nullable', 'file', 'extensions:pdf', 'max:102400'],
             'notes' => ['nullable', 'string', 'max:5000'],
         ]);
 

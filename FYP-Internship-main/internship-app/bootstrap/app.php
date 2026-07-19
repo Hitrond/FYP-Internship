@@ -7,6 +7,7 @@ use App\Http\Middleware\EnsureUserIsSupervisor;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Exceptions\PostTooLargeException;
 use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -36,5 +37,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (PostTooLargeException $exception, Request $request) {
+            return response()->view('errors.file-too-large', [], 413);
+        });
     })->create();

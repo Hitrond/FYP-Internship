@@ -30,7 +30,7 @@ class AdminEvaluationFormController extends Controller
             'version' => ['nullable', 'string', 'max:50'],
             'criteria_text' => ['required', 'string'],
             'instructions' => ['nullable', 'string', 'max:5000'],
-            'form_file' => ['nullable', 'file', 'mimes:pdf,doc,docx,xlsx,xls', 'max:10240'],
+            'form_file' => ['nullable', 'file', 'extensions:pdf,doc,docx,xlsx,xls', 'max:102400'],
             'activate' => ['nullable', 'boolean'],
         ]);
 

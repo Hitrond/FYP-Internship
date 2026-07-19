@@ -9,7 +9,7 @@ class MentorFinalClearanceController extends Controller
 {
     public function index(Request $request)
     {
-        $clearances = FinalClearance::with(['student', 'placementClearance'])
+        $clearances = FinalClearance::with(['student', 'placementClearance', 'events.actor'])
             ->where('mentor_id', $request->user()->id)
             ->when($request->filled('search'), function ($query) use ($request): void {
                 $search = trim((string) $request->input('search'));
@@ -47,6 +47,11 @@ class MentorFinalClearanceController extends Controller
             'mentor_feedback' => null,
             'mentor_signed_at' => now(),
         ]);
+        $finalClearance->events()->create([
+            'actor_id' => $request->user()->id,
+            'action' => 'mentor_approved',
+            'actor_role' => 'academic mentor',
+        ]);
         $finalClearance->refreshOverallStatus();
 
         return back()->with('success', 'Final clearance signed by Mentor.');
@@ -64,6 +69,12 @@ class MentorFinalClearanceController extends Controller
             'mentor_status' => FinalClearance::STATUS_REJECTED,
             'mentor_feedback' => $validated['feedback'],
             'mentor_signed_at' => null,
+        ]);
+        $finalClearance->events()->create([
+            'actor_id' => $request->user()->id,
+            'action' => 'mentor_rejected',
+            'actor_role' => 'academic mentor',
+            'feedback' => $validated['feedback'],
         ]);
         $finalClearance->refreshOverallStatus();
 

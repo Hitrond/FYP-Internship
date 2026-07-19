@@ -61,8 +61,13 @@ class FinalClearanceController extends Controller
         }
 
         $validated = $request->validate([
-            'final_report' => ['required', 'file', 'mimes:pdf,doc,docx', 'max:51200'],
-            'report_clearance_form' => ['required', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
+            'final_report' => ['required', 'file', 'extensions:pdf,doc,docx', 'max:102400'],
+            'report_clearance_form' => ['required', 'file', 'extensions:pdf,doc,docx', 'max:102400'],
+        ], [
+            'final_report.extensions' => 'The internship report must be a PDF, DOC, or DOCX file.',
+            'report_clearance_form.extensions' => 'The report clearance form must be a PDF, DOC, or DOCX file.',
+            'final_report.max' => 'The internship report is too large. Upload a file no larger than 100 MB.',
+            'report_clearance_form.max' => 'The report clearance form is too large. Upload a file no larger than 100 MB.',
         ]);
 
         $report = $validated['final_report'];
@@ -102,6 +107,12 @@ class FinalClearanceController extends Controller
                 'completed_at' => null,
             ]
         );
+
+        $clearance->events()->create([
+            'actor_id' => $student->id,
+            'action' => $clearance->wasRecentlyCreated ? 'submitted' : 'resubmitted',
+            'actor_role' => 'student',
+        ]);
 
         foreach (array_unique(array_filter($oldPaths)) as $oldPath) {
             Storage::disk('local')->delete($oldPath);

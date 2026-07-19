@@ -48,7 +48,7 @@
                                     Your review: {{ $reviewStatus }}
                                 </span>
                             </div>
-                            <p class="mt-1 text-sm text-slate-500">Submitted {{ $clearance->updated_at->format('M d, Y H:i') }}</p>
+                            <p class="mt-1 text-sm text-slate-500">First submitted {{ $clearance->created_at->format('M d, Y H:i') }}</p>
                         </div>
                         <div class="flex flex-wrap gap-3">
                             <a href="{{ route('final-clearances.view', [$clearance, 'report']) }}" target="_blank" rel="noopener" class="rounded-lg bg-indigo-100 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-200">Internship Report</a>
@@ -101,6 +101,49 @@
                             @if ($feedback)
                                 <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">{{ $feedback }}</div>
                             @endif
+
+                            <details class="rounded-lg border border-slate-200 bg-white" @if($clearance->events->isNotEmpty()) open @endif>
+                                <summary class="cursor-pointer px-4 py-3 text-sm font-bold text-slate-800">
+                                    Clearance history
+                                    <span class="ml-1 font-normal text-slate-500">({{ max(1, $clearance->events->count()) }} {{ Str::plural('event', max(1, $clearance->events->count())) }})</span>
+                                </summary>
+                                <ol class="border-t border-slate-100 px-4 py-4">
+                                    @if ($clearance->events->isEmpty())
+                                        <li class="relative border-l-2 border-indigo-200 pb-1 pl-5">
+                                            <span class="absolute -left-[7px] top-1 h-3 w-3 rounded-full bg-indigo-500 ring-4 ring-white"></span>
+                                            <p class="text-sm font-semibold text-slate-900">Final clearance submitted</p>
+                                            <p class="mt-0.5 text-xs text-slate-500">{{ $clearance->student->name }} (Student) · {{ $clearance->created_at->format('M d, Y H:i') }}</p>
+                                            <p class="mt-2 text-xs text-slate-500">Earlier decisions were recorded before detailed history tracking was introduced. Current sign-off statuses are shown above.</p>
+                                        </li>
+                                    @else
+                                        @foreach ($clearance->events->sortByDesc('created_at') as $event)
+                                            @php
+                                                $eventLabel = match ($event->action) {
+                                                    'submitted' => 'Final clearance submitted',
+                                                    'resubmitted' => 'Final clearance resubmitted',
+                                                    'mentor_approved' => 'Approved by Academic Mentor',
+                                                    'mentor_rejected' => 'Returned by Academic Mentor',
+                                                    'supervisor_approved' => 'Approved by Industrial Supervisor',
+                                                    'supervisor_rejected' => 'Returned by Industrial Supervisor',
+                                                    default => Str::headline($event->action),
+                                                };
+                                                $approvedEvent = str_ends_with($event->action, '_approved');
+                                                $rejectedEvent = str_ends_with($event->action, '_rejected');
+                                            @endphp
+                                            <li class="relative border-l-2 border-slate-200 pb-5 pl-5 last:border-transparent last:pb-0">
+                                                <span class="absolute -left-[7px] top-1 h-3 w-3 rounded-full ring-4 ring-white {{ $approvedEvent ? 'bg-emerald-500' : ($rejectedEvent ? 'bg-red-500' : 'bg-indigo-500') }}"></span>
+                                                <p class="text-sm font-semibold text-slate-900">{{ $eventLabel }}</p>
+                                                <p class="mt-0.5 text-xs capitalize text-slate-500">{{ $event->actor?->name ?? 'Former user' }} ({{ $event->actor_role }}) · {{ $event->created_at->format('M d, Y H:i') }}</p>
+                                                @if ($event->feedback)
+                                                    <div class="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+                                                        <span class="font-semibold">Feedback:</span> {{ $event->feedback }}
+                                                    </div>
+                                                @endif
+                                            </li>
+                                        @endforeach
+                                    @endif
+                                </ol>
+                            </details>
                         </div>
 
                         @if ($reviewStatus === 'pending')

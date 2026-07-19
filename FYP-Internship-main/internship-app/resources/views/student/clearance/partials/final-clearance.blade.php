@@ -106,12 +106,13 @@
                 <div>
                     <x-input-label for="final_report" value="Internship Report (writing only)" />
                     <input id="final_report" name="final_report" type="file" accept=".pdf,.doc,.docx" class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm" required />
+                    <p class="mt-1 text-xs text-slate-500">PDF, DOC, or DOCX · Maximum 100 MB</p>
                     <x-input-error class="mt-2" :messages="$errors->get('final_report')" />
                 </div>
                 <div>
                     <x-input-label for="report_clearance_form" value="Signed Report Clearance Form" />
                     <input id="report_clearance_form" name="report_clearance_form" type="file" accept=".pdf,.doc,.docx" class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm" required />
-                    <p class="mt-1 text-xs text-slate-500">The blank university form can be added here once it is provided.</p>
+                    <p class="mt-1 text-xs text-slate-500">PDF, DOC, or DOCX · Maximum 100 MB. The blank university form can be added here once it is provided.</p>
                     <x-input-error class="mt-2" :messages="$errors->get('report_clearance_form')" />
                 </div>
                 <div class="flex justify-end">

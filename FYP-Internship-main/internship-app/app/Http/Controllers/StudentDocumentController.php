@@ -15,7 +15,7 @@ class StudentDocumentController extends Controller
 
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
-            'document' => ['required', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
+            'document' => ['required', 'file', 'extensions:pdf,doc,docx', 'max:102400'],
         ]);
 
         $file = $request->file('document');

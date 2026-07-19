@@ -83,9 +83,13 @@ class StudentClearanceController extends Controller
             'supervisor_name' => ['required', 'string', 'max:255'],
             'supervisor_email' => ['required', 'string', 'email', 'max:255'],
             'supervisor_personal_email' => ['required', 'string', 'email', 'max:255'],
-            'job_offer' => ['required', 'file', 'mimes:pdf', 'max:5120'],
-            'indemnity_letter' => ['required', 'file', 'mimes:pdf', 'max:5120'],
-            'placement_agreement' => ['required', 'file', 'mimes:pdf', 'max:5120'],
+            'job_offer' => ['required', 'file', 'extensions:pdf', 'max:102400'],
+            'indemnity_letter' => ['required', 'file', 'extensions:pdf', 'max:102400'],
+            'placement_agreement' => ['required', 'file', 'extensions:pdf', 'max:102400'],
+        ], [
+            'job_offer.max' => 'The job offer is too large. Upload a PDF no larger than 100 MB.',
+            'indemnity_letter.max' => 'The indemnity letter is too large. Upload a PDF no larger than 100 MB.',
+            'placement_agreement.max' => 'The placement agreement is too large. Upload a PDF no larger than 100 MB.',
         ]);
 
         $this->validatePlacementDates($validated['start_date'], $validated['end_date'], $activeCycle);

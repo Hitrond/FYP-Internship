@@ -81,7 +81,7 @@
                 <!-- ADDED: Optional Evidence Upload -->
                 <div class="mb-8 border-b border-slate-200 pb-8">
                     <label class="block text-sm font-medium text-indigo-400 mb-2">Supporting Evidence (Optional)</label>
-                    <p class="text-xs text-slate-500 mb-3">Upload a screenshot, photo, or document to support your entry (Max 5MB. PDF, JPG, PNG).</p>
+                    <p class="text-xs text-slate-500 mb-3">Upload a screenshot, photo, or document to support your entry (maximum 100 MB; PDF, DOC, DOCX, JPG, or PNG).</p>
                     <input type="file" name="evidence" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-500 file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-xs file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100">
                 </div>
 

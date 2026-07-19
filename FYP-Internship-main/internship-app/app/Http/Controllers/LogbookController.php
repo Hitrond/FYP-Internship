@@ -589,7 +589,7 @@ class LogbookController extends Controller
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             'objectives' => ['required', 'string'],
             'content' => ['required', 'string'],
-            'evidence' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf,doc,docx', 'max:5120'],
+            'evidence' => ['nullable', 'file', 'extensions:jpg,jpeg,png,pdf,doc,docx', 'max:102400'],
             'attendance' => [$creating ? 'required' : 'sometimes', 'array', 'size:5'],
             'attendance.*.date' => ['required_with:attendance', 'date', 'distinct'],
             'attendance.*.status' => [
@@ -601,8 +601,8 @@ class LogbookController extends Controller
             'attendance.*.mc_evidence' => [
                 'nullable',
                 'file',
-                'mimes:jpg,jpeg,png,pdf',
-                'max:5120',
+                'extensions:jpg,jpeg,png,pdf',
+                'max:102400',
             ],
         ];
 

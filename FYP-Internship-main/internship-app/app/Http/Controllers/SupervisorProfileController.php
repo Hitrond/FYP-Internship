@@ -31,8 +31,8 @@ class SupervisorProfileController extends Controller
                 'max:255',
                 Rule::unique('users', 'email')->ignore($request->user()->id),
             ],
-            'signature_image' => ['nullable', 'file', 'mimes:png,jpg,jpeg', 'max:5120'],
-            'company_stamp' => ['nullable', 'file', 'mimes:png,jpg,jpeg', 'max:5120'],
+            'signature_image' => ['nullable', 'file', 'extensions:png,jpg,jpeg', 'max:102400'],
+            'company_stamp' => ['nullable', 'file', 'extensions:png,jpg,jpeg', 'max:102400'],
         ]);
 
         $user = $request->user();

@@ -9,7 +9,7 @@ class SupervisorFinalClearanceController extends Controller
 {
     public function index(Request $request)
     {
-        $clearances = FinalClearance::with(['student', 'placementClearance'])
+        $clearances = FinalClearance::with(['student', 'placementClearance', 'events.actor'])
             ->where('supervisor_id', $request->user()->id)
             ->when($request->filled('search'), function ($query) use ($request): void {
                 $search = trim((string) $request->input('search'));
@@ -54,6 +54,11 @@ class SupervisorFinalClearanceController extends Controller
             'industrial_hours_completed' => true,
             'company_property_cleared' => true,
         ]);
+        $finalClearance->events()->create([
+            'actor_id' => $request->user()->id,
+            'action' => 'supervisor_approved',
+            'actor_role' => 'industrial supervisor',
+        ]);
         $finalClearance->refreshOverallStatus();
 
         return back()->with('success', 'Final clearance signed by Supervisor.');
@@ -73,6 +78,12 @@ class SupervisorFinalClearanceController extends Controller
             'supervisor_signed_at' => null,
             'industrial_hours_completed' => false,
             'company_property_cleared' => false,
+        ]);
+        $finalClearance->events()->create([
+            'actor_id' => $request->user()->id,
+            'action' => 'supervisor_rejected',
+            'actor_role' => 'industrial supervisor',
+            'feedback' => $validated['feedback'],
         ]);
         $finalClearance->refreshOverallStatus();
 

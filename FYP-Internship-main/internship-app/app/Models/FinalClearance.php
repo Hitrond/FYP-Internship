@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class FinalClearance extends Model
 {
@@ -70,6 +71,11 @@ class FinalClearance extends Model
     public function cycle(): BelongsTo
     {
         return $this->belongsTo(InternshipCycle::class, 'internship_cycle_id');
+    }
+
+    public function events(): HasMany
+    {
+        return $this->hasMany(FinalClearanceEvent::class)->oldest();
     }
 
     public function refreshOverallStatus(): void
