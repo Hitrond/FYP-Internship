@@ -63,7 +63,7 @@
                 <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                     <div class="mb-5">
                         <h3 class="font-bold text-slate-900">Add students to this cohort</h3>
-                        <p class="mt-1 text-sm text-slate-500">Select multiple students and optionally assign one Academic Mentor in the same action.</p>
+                        <p class="mt-1 text-sm text-slate-500">Select multiple students and optionally assign one Academic Mentor in the same action. Students enrolled in another active semester are unavailable until removed from that semester.</p>
                     </div>
                     <form method="POST" action="{{ route('admin.semesters.students.store', $semester) }}" class="grid gap-4 lg:grid-cols-[1fr_280px_auto] lg:items-end">
                         @csrf
@@ -77,6 +77,10 @@
                                 @endforelse
                             </select>
                             <span class="mt-1 block text-xs text-slate-500">Hold Ctrl or Cmd to select several students.</span>
+                            @if ($activeSemesterStudentIds->isNotEmpty())
+                                <span class="mt-1 block text-xs font-medium text-amber-700">{{ $activeSemesterStudentIds->unique()->count() }} active-semester {{ Str::plural('student', $activeSemesterStudentIds->unique()->count()) }} hidden from this list.</span>
+                            @endif
+                            <x-input-error class="mt-2" :messages="$errors->get('student_ids')" />
                         </label>
                         <label>
                             <span class="mb-2 block text-sm font-bold text-slate-700">Academic Mentor</span>

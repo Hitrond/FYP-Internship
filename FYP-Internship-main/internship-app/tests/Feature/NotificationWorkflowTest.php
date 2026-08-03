@@ -16,6 +16,39 @@ class NotificationWorkflowTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config([
+            'services.brevo.key' => null,
+            'services.brevo.use_api' => false,
+            'broadcasting.default' => 'log',
+        ]);
+    }
+
+    public function test_pusher_broadcast_channel_is_only_enabled_with_complete_configuration(): void
+    {
+        $student = User::factory()->create(['role' => 'student']);
+        $notification = new WorkflowAlertNotification(
+            'Live workflow alert',
+            'A workflow item changed.',
+            route('notifications.index'),
+        );
+
+        $this->assertNotContains('broadcast', $notification->via($student));
+
+        config([
+            'broadcasting.default' => 'pusher',
+            'broadcasting.connections.pusher.app_id' => 'test-app-id',
+            'broadcasting.connections.pusher.key' => 'test-app-key',
+            'broadcasting.connections.pusher.secret' => 'test-app-secret',
+        ]);
+
+        $this->assertContains('broadcast', $notification->via($student));
+        $this->assertSame('Live workflow alert', $notification->toBroadcast($student)->data['title']);
+    }
+
     public function test_workflow_alerts_use_brevo_api_when_configured(): void
     {
         config([

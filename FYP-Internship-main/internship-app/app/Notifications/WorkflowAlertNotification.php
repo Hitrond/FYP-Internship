@@ -5,6 +5,7 @@ namespace App\Notifications;
 use App\Notifications\Channels\BrevoWorkflowChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -21,10 +22,16 @@ class WorkflowAlertNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return [
+        $channels = [
             'database',
             config('services.brevo.use_api') ? BrevoWorkflowChannel::class : 'mail',
         ];
+
+        if ($this->pusherIsConfigured()) {
+            $channels[] = 'broadcast';
+        }
+
+        return $channels;
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -46,5 +53,18 @@ class WorkflowAlertNotification extends Notification implements ShouldQueue
             'level' => $this->level,
             'occurred_at' => now()->toIso8601String(),
         ];
+    }
+
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        return new BroadcastMessage($this->toArray($notifiable));
+    }
+
+    private function pusherIsConfigured(): bool
+    {
+        return config('broadcasting.default') === 'pusher'
+            && filled(config('broadcasting.connections.pusher.app_id'))
+            && filled(config('broadcasting.connections.pusher.key'))
+            && filled(config('broadcasting.connections.pusher.secret'));
     }
 }

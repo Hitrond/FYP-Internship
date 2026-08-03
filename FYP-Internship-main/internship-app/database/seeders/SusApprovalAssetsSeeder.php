@@ -3,10 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\Logbook;
-use App\Models\PlacementClearance;
 use App\Models\Profile;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 
@@ -46,56 +44,6 @@ class SusApprovalAssetsSeeder extends Seeder
                     'approval_stamp_path' => $stampPath,
                     'approval_company_name' => $company,
                 ]);
-        }
-
-        $this->approveAdamLogbooks();
-    }
-
-    private function approveAdamLogbooks(): void
-    {
-        $student = User::where('email', 'adam@gmail.com')->first();
-        $supervisor = User::where('email', 'supervisor1@gmail.com')->first();
-        $placement = $student
-            ? PlacementClearance::where('student_id', $student->id)->latest()->first()
-            : null;
-
-        if (! $student || ! $supervisor || ! $placement) {
-            return;
-        }
-
-        $profile = $supervisor->profile;
-        $totalWeeks = $placement->cycle?->duration_weeks ?? 16;
-        $firstMonday = Carbon::parse($placement->start_date ?? now()->startOfWeek())
-            ->startOfWeek(Carbon::MONDAY);
-
-        foreach (range(1, $totalWeeks) as $week) {
-            $startDate = $firstMonday->copy()->addWeeks($week - 1);
-            $logbook = Logbook::firstOrNew([
-                'user_id' => $student->id,
-                'week_number' => $week,
-            ]);
-
-            $logbook->fill([
-                'internship_cycle_id' => $placement->internship_cycle_id,
-                'timeline_generated' => true,
-                'start_date' => $logbook->start_date ?? $startDate->toDateString(),
-                'end_date' => $logbook->end_date ?? $startDate->copy()->addDays(4)->toDateString(),
-                'submission_due_at' => $logbook->submission_due_at ?? $startDate->copy()->addDays(11)->endOfDay(),
-                'description' => $logbook->description
-                    ?: "=== Type(s) & Objective(s) ===\nCompleted the assigned internship work for Week {$week}.\n\n=== Content & Skills ===\nApplied technical and professional skills to complete weekly responsibilities.",
-                'rendered_minutes' => $logbook->rendered_minutes ?: 2400,
-                'verified_minutes' => $logbook->rendered_minutes ?: 2400,
-                'status' => 'approved',
-                'locked_at' => null,
-                'supervisor_remarks' => 'Approved by the Industrial Supervisor.',
-                'rejection_category' => null,
-                'approved_by_id' => $supervisor->id,
-                'approved_at' => $logbook->approved_at ?? now(),
-                'approval_signature_path' => $profile?->signature_path,
-                'approval_stamp_path' => $profile?->stamp_path,
-                'approval_company_name' => $profile?->company_name,
-            ]);
-            $logbook->save();
         }
     }
 

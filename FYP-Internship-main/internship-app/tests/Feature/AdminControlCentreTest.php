@@ -5,11 +5,50 @@ namespace Tests\Feature;
 use App\Models\PlacementClearance;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class AdminControlCentreTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_admin_can_create_a_supervisor_account_that_can_log_in(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.create'))
+            ->assertOk()
+            ->assertSee('Industrial Supervisor');
+
+        $this->post(route('admin.users.store'), [
+            'name' => 'New Industry Supervisor',
+            'email' => 'new.supervisor@example.test',
+            'role' => 'supervisor',
+            'password' => 'Supervisor123!',
+            'password_confirmation' => 'Supervisor123!',
+        ])->assertRedirect(route('admin.users.index'))
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('success');
+
+        $supervisor = User::where('email', 'new.supervisor@example.test')->firstOrFail();
+
+        $this->assertSame('supervisor', $supervisor->role);
+        $this->assertTrue(Hash::check('Supervisor123!', $supervisor->password));
+
+        $this->post(route('logout'));
+
+        $this->post(route('login'), [
+            'email' => $supervisor->email,
+            'password' => 'Supervisor123!',
+        ])->assertRedirect(route('supervisor.dashboard', absolute: false));
+
+        $this->assertAuthenticatedAs($supervisor);
+
+        $this->get(route('supervisor.dashboard'))
+            ->assertOk()
+            ->assertSee('Industrial Supervisor Dashboard');
+    }
 
     public function test_admin_dashboard_displays_system_statistics_and_standard_dashboard_redirects(): void
     {

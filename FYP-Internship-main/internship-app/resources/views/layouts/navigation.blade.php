@@ -69,9 +69,11 @@
             <div class="hidden shrink-0 items-center gap-3 xl:flex">
                 <a href="{{ route('notifications.index') }}" class="relative flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700" aria-label="Notifications">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 00-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5m6 0a3 3 0 01-6 0h6z"/></svg>
-                    @if ($unreadNotificationCount > 0)
-                        <span class="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-bold text-white">{{ min(99, $unreadNotificationCount) }}</span>
-                    @endif
+                    <span
+                        class="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-bold text-white {{ $unreadNotificationCount > 0 ? '' : 'hidden' }}"
+                        data-notification-count
+                        data-count="{{ $unreadNotificationCount }}"
+                    >{{ $unreadNotificationCount > 99 ? '99+' : $unreadNotificationCount }}</span>
                 </a>
                 <x-dropdown align="right" width="64" contentClasses="py-2 bg-white">
                     <x-slot name="trigger">
@@ -111,9 +113,11 @@
             <div class="flex items-center gap-2 xl:hidden">
                 <a href="{{ route('notifications.index') }}" class="relative flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 text-slate-600" aria-label="Notifications">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 00-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5m6 0a3 3 0 01-6 0h6z"/></svg>
-                    @if ($unreadNotificationCount > 0)
-                        <span class="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-bold text-white">{{ min(99, $unreadNotificationCount) }}</span>
-                    @endif
+                    <span
+                        class="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-bold text-white {{ $unreadNotificationCount > 0 ? '' : 'hidden' }}"
+                        data-notification-count
+                        data-count="{{ $unreadNotificationCount }}"
+                    >{{ $unreadNotificationCount > 99 ? '99+' : $unreadNotificationCount }}</span>
                 </a>
                 <button @click="open = ! open" class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition hover:bg-slate-50" :aria-expanded="open.toString()" aria-label="Toggle navigation">
                     <svg x-show="!open" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>

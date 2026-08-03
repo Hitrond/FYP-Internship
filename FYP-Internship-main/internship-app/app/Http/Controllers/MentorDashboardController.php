@@ -65,6 +65,8 @@ class MentorDashboardController extends Controller
                     ->when($activeCycle, fn ($query) => $query->where('internship_cycle_id', $activeCycle->id)),
                 'performanceEvaluations' => fn ($query) => $query
                     ->when($activeCycle, fn ($query) => $query->where('internship_cycle_id', $activeCycle->id)),
+                'finalClearance' => fn ($query) => $query
+                    ->when($activeCycle, fn ($query) => $query->where('internship_cycle_id', $activeCycle->id)),
                 'internshipResult' => fn ($query) => $query
                     ->when($activeCycle, fn ($query) => $query->where('internship_cycle_id', $activeCycle->id)),
             ])
@@ -135,11 +137,20 @@ class MentorDashboardController extends Controller
         $workflowStage = 'pre_placement';
         if ($pendingCount > 0) {
             $workflowStage = 'placement_review';
-        } elseif ($assignedStudents->contains(fn ($student) => $student->latestPlacementClearance?->status === 'approved')) {
-            $workflowStage = 'internship';
-        }
-        if ($assignedStudents->isNotEmpty() && $assignedStudents->every(fn ($student) => (bool) $student->internshipResult)) {
+        } elseif (
+            $assignedStudents->contains(fn ($student) => (bool) $student->finalClearance)
+            || ($assignedStudents->isNotEmpty()
+                && $assignedStudents->every(fn ($student) => (bool) $student->internshipResult))
+        ) {
             $workflowStage = 'completion';
+        } elseif ($assignedStudents->contains(
+            fn ($student) => in_array(
+                $student->latestPlacementClearance?->status,
+                ['approved', 'completed'],
+                true
+            )
+        )) {
+            $workflowStage = 'internship';
         }
 
         return view('mentor.dashboard', compact(

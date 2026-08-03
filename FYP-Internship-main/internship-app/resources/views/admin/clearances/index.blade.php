@@ -138,6 +138,12 @@
                                                 <button class="rounded-lg bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100">Create supervisor login</button>
                                                 <p class="mt-1 text-[11px] text-slate-400">{{ $placement->supervisor_personal_email }}</p>
                                             </form>
+                                        @elseif ($placement && $placement->status === 'completed' && $placement->supervisor_user_id)
+                                            <form method="POST" action="{{ route('admin.clearances.generate-supervisor', $placement) }}">
+                                                @csrf
+                                                <button class="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-100">Resend supervisor login</button>
+                                                <p class="mt-1 text-[11px] text-slate-400">{{ $placement->supervisor_personal_email }}</p>
+                                            </form>
                                         @else
                                             <a href="{{ route('admin.users.edit', $student) }}" class="text-xs font-bold text-indigo-600 hover:text-indigo-800">Manage student</a>
                                         @endif

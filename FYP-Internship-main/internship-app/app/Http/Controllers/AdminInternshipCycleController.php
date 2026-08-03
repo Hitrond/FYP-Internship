@@ -57,8 +57,16 @@ class AdminInternshipCycleController extends Controller
             ->values();
 
         $assignedStudentIds = $assignments->pluck('student_id');
+        $activeSemesterStudentIds = InternshipCycleStudent::query()
+            ->where('internship_cycle_id', '!=', $semester->id)
+            ->whereHas(
+                'cycle',
+                fn ($query) => $query->where('status', InternshipCycle::STATUS_ACTIVE)
+            )
+            ->pluck('student_id');
         $availableStudents = User::where('role', 'student')
             ->whereNotIn('id', $assignedStudentIds)
+            ->whereNotIn('id', $activeSemesterStudentIds)
             ->with('profile')
             ->orderBy('name')
             ->get();
@@ -68,6 +76,7 @@ class AdminInternshipCycleController extends Controller
             'semester',
             'assignments',
             'availableStudents',
+            'activeSemesterStudentIds',
             'mentors',
         ));
     }
@@ -112,6 +121,31 @@ class AdminInternshipCycleController extends Controller
                 Rule::exists('users', 'id')->where(fn ($query) => $query->where('role', 'mentor')),
             ],
         ]);
+
+        $activeAssignments = InternshipCycleStudent::query()
+            ->with(['student', 'cycle'])
+            ->where('internship_cycle_id', '!=', $semester->id)
+            ->whereIn('student_id', array_unique($validated['student_ids']))
+            ->whereHas(
+                'cycle',
+                fn ($query) => $query->where('status', InternshipCycle::STATUS_ACTIVE)
+            )
+            ->get();
+
+        if ($activeAssignments->isNotEmpty()) {
+            $studentNames = $activeAssignments
+                ->map(fn (InternshipCycleStudent $assignment) => $assignment->student?->name)
+                ->filter()
+                ->unique()
+                ->implode(', ');
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'student_ids' => ($studentNames ?: 'One or more selected students')
+                        .' cannot be added because they are enrolled in an active semester. Remove them from the active semester first.',
+                ]);
+        }
 
         DB::transaction(function () use ($semester, $validated): void {
             foreach (array_unique($validated['student_ids']) as $studentId) {

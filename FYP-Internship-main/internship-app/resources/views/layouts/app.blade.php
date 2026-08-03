@@ -4,6 +4,18 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        @auth
+            <meta name="authenticated-user-id" content="{{ Auth::id() }}">
+            @if (
+                config('broadcasting.default') === 'pusher'
+                && filled(config('broadcasting.connections.pusher.app_id'))
+                && filled(config('broadcasting.connections.pusher.key'))
+                && filled(config('broadcasting.connections.pusher.secret'))
+            )
+                <meta name="pusher-app-key" content="{{ config('broadcasting.connections.pusher.key') }}">
+                <meta name="pusher-app-cluster" content="{{ config('broadcasting.connections.pusher.options.cluster', 'mt1') }}">
+            @endif
+        @endauth
 
         <title>{{ config('app.name', 'InternTrack') }}</title>
 
@@ -57,6 +69,16 @@
             <main class="min-w-0 overflow-x-hidden">
                 {{ $slot }}
             </main>
+
+            @auth
+                <div
+                    class="pointer-events-none fixed right-4 top-24 z-50 grid w-[min(24rem,calc(100vw-2rem))] gap-3"
+                    data-realtime-notifications
+                    data-notifications-url="{{ route('notifications.index') }}"
+                    aria-live="polite"
+                    aria-atomic="false"
+                ></div>
+            @endauth
         </div>
     </body>
 </html>

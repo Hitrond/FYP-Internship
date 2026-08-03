@@ -149,7 +149,7 @@ class AdminClearanceController extends Controller
             ]);
 
             try {
-                if ($brevoMailer->configured() && ! app()->runningUnitTests()) {
+                if ($brevoMailer->configured()) {
                     $brevoMailer->sendSupervisorWelcome($supervisor, $rawPassword, $clearance->student->name);
                 } else {
                     Mail::to($supervisor->email)->send(
@@ -161,11 +161,23 @@ class AdminClearanceController extends Controller
             } catch (\Throwable $exception) {
                 report($exception);
 
-                return 'Supervisor account saved, but the email could not be sent. Temporary password: '.$rawPassword;
+                return $this->supervisorDeliveryFailureMessage($exception, $rawPassword);
             }
         });
 
         return back()->with('success', $message);
+    }
+
+    private function supervisorDeliveryFailureMessage(\Throwable $exception, string $rawPassword): string
+    {
+        if (preg_match('/unrecognised IP address ([0-9a-f:.]+)/i', $exception->getMessage(), $matches)) {
+            return 'Supervisor account saved, but Brevo blocked email from IP '.$matches[1]
+                .'. Authorise this IP in Brevo Security, then use Resend supervisor login. Temporary password: '
+                .$rawPassword;
+        }
+
+        return 'Supervisor account saved, but the email could not be sent. Use Resend supervisor login after checking the Brevo configuration. Temporary password: '
+            .$rawPassword;
     }
 
     private function studentProgressQuery(Request $request): Builder

@@ -21,6 +21,9 @@
 /storage/*.key
 /storage/pail
 /vendor
+/tmp
+/storage/app/test-results.xml
+~$*.docx
 _ide_helper.php
 Homestead.json
 Homestead.yaml

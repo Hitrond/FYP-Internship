@@ -1,24 +1,13 @@
-@php
-    $profile = $user->profile;
-    $name = $profile?->full_name ?: $user->name;
-    $title = $profile?->course_name ?: 'Software Engineering Student';
-    $email = $profile?->personal_email ?: $user->email;
-    $phone = $profile?->contact_number ?: '';
-    $projects = array_values(array_filter(array_map('trim', preg_split('/\R/', $profile?->projects_summary ?? ''))));
-@endphp
 <!doctype html>
-<html><head><meta charset="utf-8"><style>
-    body { margin:0; color:#1f2937; font-family:Arial,sans-serif; font-size:10pt; line-height:1.45; }
-    h1,h2,h3,p { margin-top:0; } .muted{color:#6b7280}.rule{border-bottom:1px solid #d1d5db}.section{margin-top:18px}.section-title{font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-size:10pt}.small{font-size:9pt}.blue{color:#2563eb}.skills span{display:inline-block;margin:0 16px 7px 0}
-    .classic{font-family:"Times New Roman",serif}.classic .head{text-align:center;padding-bottom:12px}.classic h1{font-size:18pt;margin-bottom:4px}.classic-table{width:100%;border-collapse:collapse}.classic-table td{vertical-align:top;border-bottom:1px solid #d1d5db;padding:13px 4px}.classic-table .label{width:24%;font-weight:bold;font-size:9pt;text-transform:uppercase;letter-spacing:1px}
-    .traditional{width:100%;border-collapse:collapse;min-height:1000px}.traditional td{vertical-align:top;padding:24px}.traditional .side{width:32%;background:#f3f4f6;border-right:1px solid #d1d5db}.traditional .main{width:68%}.traditional h1{font-size:28pt;text-transform:uppercase;line-height:1;margin-bottom:7px}.traditional h3{font-size:11pt;letter-spacing:1px;text-transform:uppercase;margin:22px 0 10px}.traditional p{margin:0 0 12px 0;line-height:1.55}.traditional .main h3{border-bottom:1px solid #d1d5db;padding-bottom:5px}.traditional .main h3:first-of-type{margin-top:14px}
-    .prime h1{font-size:26pt;font-weight:normal;margin-bottom:3px}.prime .contact{text-align:right;color:#3b82f6}.prime-head{width:100%;border-collapse:collapse}.prime-head td{vertical-align:top}.prime h3{font-size:15pt;font-weight:normal;color:#2563eb;border-bottom:1px solid #dbeafe;padding-bottom:4px;margin:18px 0 10px}
-</style></head><body>
-@if($template === 'traditional')
-<table class="traditional"><tr><td class="side"><h3>Info</h3><b>Phone</b><p class="small muted">{{ $phone ?: '-' }}</p><b>Email</b><p class="small muted">{{ $email }}</p><h3>Skills</h3>@forelse($user->skills as $skill)<p class="small"><b>{{ $skill->name }}</b><br><span class="muted">{{ $skill->proficiency }}</span></p>@empty<p class="muted">No skills listed yet.</p>@endforelse</td><td class="main"><h1>{{ $name }}</h1><p class="muted rule" style="padding-bottom:16px;text-transform:uppercase;letter-spacing:1px">{{ $title }}</p><h3>Profile</h3><p>{{ $profile?->bio ?: 'Add your profile summary in Student Profile.' }}</p><h3>Project History</h3>@forelse($projects as $project)<p><b>{{ $project }}</b></p>@empty<p>Add your projects in Student Profile.</p>@endforelse<h3>Education</h3>@foreach($user->education as $edu)<p><b>{{ $edu->degree }}</b><br>{{ $edu->institution_name }}</p>@endforeach</td></tr></table>
-@elseif($template === 'prime-ats')
-<div class="prime"><table class="prime-head"><tr><td><h1 class="blue">{{ $name }}</h1><p class="blue">{{ $title }}</p></td><td class="contact">{{ $email }}<br>{{ $phone }}</td></tr></table><p>{{ $profile?->bio ?: 'Add your profile summary in Student Profile.' }}</p><h3>Project Experience</h3>@forelse($projects as $project)<p><b class="blue">{{ $project }}</b></p>@empty<p>Add your projects in Student Profile.</p>@endforelse<h3>Education</h3>@forelse($user->education as $edu)<p><b class="blue">{{ $edu->degree }}</b> <span class="muted">({{ $edu->start_date?->format('M Y') }} - {{ $edu->end_date?->format('M Y') ?: 'Present' }})</span><br>{{ $edu->institution_name }}</p>@empty<p>No education records added yet.</p>@endforelse<h3>Areas of Expertise</h3><p class="skills">@foreach($user->skills as $skill)<span>&bull; {{ $skill->name }}</span>@endforeach</p></div>
-@else
-<div class="classic"><div class="head rule"><h1>{{ $name }}, {{ $title }}</h1><p class="small muted">{{ $phone }} | {{ $email }}</p></div><table class="classic-table"><tr><td class="label">Profile</td><td>{{ $profile?->bio ?: 'Add your profile summary in Student Profile.' }}</td></tr>@foreach($user->education as $edu)<tr><td class="label">Education<br><span class="muted">{{ $edu->start_date?->format('M Y') }} - {{ $edu->end_date?->format('M Y') ?: 'Present' }}</span></td><td><b>{{ $edu->institution_name }}</b><br><i>{{ $edu->degree }}{{ $edu->field_of_study ? ' ('.$edu->field_of_study.')' : '' }}</i><br>{{ $edu->notes }}</td></tr>@endforeach<tr><td class="label">Experience</td><td>@forelse($projects as $project)<p>{{ $project }}</p>@empty Add your projects in Student Profile. @endforelse</td></tr><tr><td class="label">Skills</td><td>@foreach($user->skills as $skill)<p>{{ $skill->name }} <span class="muted">- {{ $skill->proficiency }}</span></p>@endforeach</td></tr></table></div>
-@endif
-</body></html>
+<html>
+<head>
+    <meta charset="utf-8">
+</head>
+<body style="margin:0">
+    @include('student.documents.partials.resume-document', [
+        'user' => $user,
+        'resume' => $resume,
+        'template' => $template,
+    ])
+</body>
+</html>

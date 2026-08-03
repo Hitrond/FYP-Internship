@@ -25,7 +25,7 @@ return [
     'brevo' => [
         'key' => env('BREVO_API_KEY'),
         'use_api' => filter_var(
-            env('BREVO_API_ENABLED', env('RENDER', false)),
+            env('BREVO_API_ENABLED', true),
             FILTER_VALIDATE_BOOLEAN
         ) && filled(env('BREVO_API_KEY')),
     ],
@@ -41,19 +41,6 @@ return [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
-    ],
-
-    'google' => [
-        'client_id' => env('GOOGLE_CLIENT_ID'),
-        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-        'redirect' => env('GOOGLE_REDIRECT_URI'),
-    ],
-
-    'azure' => [
-        'client_id' => env('MICROSOFT_CLIENT_ID'),
-        'client_secret' => env('MICROSOFT_CLIENT_SECRET'),
-        'redirect' => env('MICROSOFT_REDIRECT_URI'),
-        'tenant' => env('MICROSOFT_TENANT_ID', 'common'),
     ],
 
 ];

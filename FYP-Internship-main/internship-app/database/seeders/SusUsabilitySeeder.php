@@ -3,13 +3,16 @@
 namespace Database\Seeders;
 
 use App\Models\Application;
+use App\Models\Education;
 use App\Models\EvaluationForm;
+use App\Models\FinalClearance;
 use App\Models\InternshipCycle;
 use App\Models\InternshipCycleStudent;
 use App\Models\Logbook;
 use App\Models\PerformanceEvaluation;
 use App\Models\PlacementClearance;
 use App\Models\Profile;
+use App\Models\Skill;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
@@ -37,7 +40,7 @@ class SusUsabilitySeeder extends Seeder
 
     private const CORE_USERS = [
         'admin@admin.com' => ['System Administrator', 'admin'],
-        'dhayanandahnaidu@gmail.com' => ['Dhaya', 'student'],
+        'dhayanandahnaidu@gmail.com' => ['Dhaya', 'supervisor'],
         'james@crs.com' => ['James', 'mentor'],
         'gobi@gmail.com' => ['Gobi', 'supervisor'],
     ];
@@ -53,7 +56,6 @@ class SusUsabilitySeeder extends Seeder
         'sarah.student03@example.test',
         'sarah.student04@example.test',
         'sarah.student05@example.test',
-        'mastervirey@gmail.com',
     ];
 
     private const SUS_USERS = [
@@ -66,6 +68,7 @@ class SusUsabilitySeeder extends Seeder
         'adam@gmail.com' => ['Adam Lee', 'student'],
         'aisha@gmail.com' => ['Aisha Kumar', 'student'],
         'daniel@gmail.com' => ['Daniel Tan', 'student'],
+        'nadia.presentation@example.test' => ['Nadia Rahman', 'student'],
         'supervisor1@gmail.com' => ['Mr. Adrian Lim', 'supervisor'],
         'supervisor2@gmail.com' => ['Ms. Priya Nair', 'supervisor'],
         'supervisor3@gmail.com' => ['Mr. Marcus Wong', 'supervisor'],
@@ -78,12 +81,15 @@ class SusUsabilitySeeder extends Seeder
             $users = $this->seedUsers();
             $cycles = $this->seedCycles();
             $this->seedProfiles($users);
+            $this->seedStudentResumeData($users);
             $this->seedApplications($users);
             $this->seedAssignments($users, $cycles['active']);
             $this->seedPendingPlacements($users, $cycles['active']);
-            $form = $this->seedEvaluationForm($cycles['active']);
+            $this->seedPresentationStages($users, $cycles['active']);
+            $evaluationForm = $this->seedEvaluationForm($cycles['active']);
             $this->seedLogbooks($users, $cycles['active']);
-            $this->seedEvaluations($users, $cycles['active'], $form);
+            $this->seedEvaluationStages($users, $cycles['active'], $evaluationForm);
+            $this->seedDanielFinalClearance($users, $cycles['active']);
         });
     }
 
@@ -116,8 +122,8 @@ class SusUsabilitySeeder extends Seeder
         $today = Carbon::today();
         $active = InternshipCycle::updateOrCreate(['intake_code' => 'APU3F2511SE'], [
             'name' => 'APU 2026 Internship Semester', 'academic_year' => '2026',
-            'placement_window_start' => $today->copy()->subWeeks(3),
-            'placement_window_end' => $today->copy()->addWeeks(13), 'duration_weeks' => 16,
+            'placement_window_start' => $today->copy()->subWeeks(16),
+            'placement_window_end' => $today->copy()->addWeeks(16), 'duration_weeks' => 16,
             'deadline_weekday' => 5, 'deadline_time' => '23:59:00',
             'timezone' => config('app.timezone', 'Asia/Singapore'), 'status' => 'active', 'activated_at' => now(),
         ]);
@@ -135,9 +141,10 @@ class SusUsabilitySeeder extends Seeder
     private function seedProfiles(array $u): void
     {
         $students = [
-            'adam@gmail.com' => ['TP070001', '0123456781', 'Laravel, PHP, PostgreSQL, Docker, HTML, CSS, JavaScript', 'Internship Management System Prototype; Student Attendance Tracker'],
-            'aisha@gmail.com' => ['TP070002', '0123456782', 'Java, Spring Boot, MySQL, React, Git, REST API', 'Online Booking System; Clinic Appointment System'],
-            'daniel@gmail.com' => ['TP070003', '0123456783', 'Python, Django, PostgreSQL, UI Design, Figma, JavaScript', 'Portfolio Website; Digital Logbook Prototype'],
+            'adam@gmail.com' => ['TP070001', '0123456781', 'Laravel, PHP, PostgreSQL, Docker, HTML, CSS, JavaScript', "Internship Management System Prototype: Built placement and logbook workflows with Laravel.\nStudent Attendance Tracker: Created attendance reporting with PostgreSQL."],
+            'aisha@gmail.com' => ['TP070002', '0123456782', 'Java, Spring Boot, MySQL, React, Git, REST API', "Online Booking System: Developed a Spring Boot booking workflow.\nClinic Appointment System: Built appointment management with React and MySQL."],
+            'daniel@gmail.com' => ['TP070003', '0123456783', 'Python, Django, PostgreSQL, UI Design, Figma, JavaScript', "Portfolio Website: Designed and developed a responsive personal portfolio.\nDigital Logbook Prototype: Implemented weekly progress tracking with Django."],
+            'nadia.presentation@example.test' => ['TP070004', '0123456784', 'PHP, Laravel, PostgreSQL, HTML, CSS, JavaScript', "Internship Portal: Implemented role-based internship workflows with Laravel.\nWeekly Progress Tracker: Built submission and review features for weekly reports."],
         ];
         foreach ($students as $email => [$tp, $phone, $skills, $projects]) {
             Profile::updateOrCreate(['user_id' => $u[$email]->id], [
@@ -145,7 +152,13 @@ class SusUsabilitySeeder extends Seeder
                 'course_name' => 'BSc (Hons) Software Engineering', 'specialization' => 'Year 3',
                 'intake_code' => 'APU3F2511SE', 'personal_email' => $email,
                 'contact_number' => $phone, 'phone_number' => $phone, 'internship_status' => 'Active',
-                'bio' => "Final-year software engineering student. Skills: {$skills}.", 'projects_summary' => $projects,
+                'bio' => "Final-year software engineering student with practical project experience in {$skills}.",
+                'linkedin_url' => 'https://www.linkedin.com/in/'.str_replace(['@gmail.com', '.presentation@example.test'], '', $email),
+                'github_url' => 'https://github.com/'.str_replace(['@gmail.com', '.presentation@example.test'], '', $email),
+                'portfolio_url' => 'https://portfolio.example.com/'.str_replace(['@gmail.com', '.presentation@example.test'], '', $email),
+                'projects_summary' => $projects,
+                'languages_summary' => "English (Fluent)\nMalay (Conversational)",
+                'references_summary' => 'Available upon request.',
             ]);
         }
         $supervisors = [
@@ -159,6 +172,39 @@ class SusUsabilitySeeder extends Seeder
                 'supervisor_job_title' => $title, 'supervisor_contact_number' => $phone,
                 'phone_number' => $phone, 'company_email' => $email,
             ]);
+        }
+    }
+
+    private function seedStudentResumeData(array $u): void
+    {
+        $studentSkills = [
+            'adam@gmail.com' => ['Laravel', 'PHP', 'PostgreSQL', 'Docker', 'HTML', 'CSS', 'JavaScript'],
+            'aisha@gmail.com' => ['Java', 'Spring Boot', 'MySQL', 'React', 'Git', 'REST API'],
+            'daniel@gmail.com' => ['Python', 'Django', 'PostgreSQL', 'UI Design', 'Figma', 'JavaScript'],
+            'nadia.presentation@example.test' => ['PHP', 'Laravel', 'PostgreSQL', 'HTML', 'CSS', 'JavaScript'],
+        ];
+
+        foreach ($studentSkills as $email => $skills) {
+            Education::updateOrCreate(
+                [
+                    'user_id' => $u[$email]->id,
+                    'institution_name' => 'Asia Pacific University of Technology & Innovation',
+                ],
+                [
+                    'degree' => 'Bachelor of Science (Hons)',
+                    'field_of_study' => 'Software Engineering',
+                    'start_date' => '2023-01-01',
+                    'end_date' => '2026-12-31',
+                    'description' => "Final Year Project: Internship Management System.\nRelevant coursework: Web Development, Software Testing, and Database Design.",
+                ]
+            );
+
+            foreach ($skills as $index => $skill) {
+                Skill::updateOrCreate(
+                    ['user_id' => $u[$email]->id, 'name' => $skill],
+                    ['proficiency' => $index < 2 ? 'Advanced' : 'Intermediate']
+                );
+            }
         }
     }
 
@@ -183,29 +229,44 @@ class SusUsabilitySeeder extends Seeder
     private function seedAssignments(array $u, InternshipCycle $cycle): void
     {
         $map = [
-            'adam@gmail.com' => ['lecturerapu1@gmail.com', 'supervisor1@gmail.com'],
+            'adam@gmail.com' => ['lecturerapu1@gmail.com', null],
             'aisha@gmail.com' => ['lecturerapu2@gmail.com', 'supervisor2@gmail.com'],
             'daniel@gmail.com' => ['lecturerapu3@gmail.com', 'supervisor3@gmail.com'],
         ];
         foreach ($map as $studentEmail => [$mentorEmail, $supervisorEmail]) {
             $student = $u[$studentEmail];
-            $student->update(['mentor_id' => $u[$mentorEmail]->id, 'supervisor_id' => $u[$supervisorEmail]->id]);
+            $student->update([
+                'mentor_id' => $u[$mentorEmail]->id,
+                'supervisor_id' => $supervisorEmail ? $u[$supervisorEmail]->id : null,
+            ]);
             InternshipCycleStudent::updateOrCreate(
                 ['internship_cycle_id' => $cycle->id, 'student_id' => $student->id],
                 ['mentor_id' => $u[$mentorEmail]->id, 'status' => 'enrolled', 'assigned_at' => now()->subWeeks(3)]
             );
         }
+
+        $presentationStudent = $u['nadia.presentation@example.test'];
+        $presentationMentor = $u['lecturerapu1@gmail.com'];
+        $presentationStudent->update([
+            'mentor_id' => $presentationMentor->id,
+            'supervisor_id' => null,
+        ]);
+        InternshipCycleStudent::updateOrCreate(
+            ['internship_cycle_id' => $cycle->id, 'student_id' => $presentationStudent->id],
+            ['mentor_id' => $presentationMentor->id, 'status' => 'enrolled', 'assigned_at' => now()->subWeeks(3)]
+        );
     }
 
     private function seedPendingPlacements(array $u, InternshipCycle $cycle): void
     {
         $placements = [
-            'adam@gmail.com' => ['lecturerapu1@gmail.com', 'DataCore Malaysia', 'Mr. Adrian Lim', 'supervisor1@gmail.com'],
-            'aisha@gmail.com' => ['lecturerapu2@gmail.com', 'SecureSoft Sdn Bhd', 'Ms. Priya Nair', 'supervisor2@gmail.com'],
-            'daniel@gmail.com' => ['lecturerapu3@gmail.com', 'LogicPulse Sdn Bhd', 'Mr. Marcus Wong', 'supervisor3@gmail.com'],
+            'adam@gmail.com' => ['lecturerapu1@gmail.com', 'DataCore Malaysia', 'Mr. Adrian Lim', 'supervisor1@gmail.com', today()->addWeek()->startOfWeek(), today()->addWeek()->startOfWeek()->addWeeks(15)->addDays(4)],
+            'aisha@gmail.com' => ['lecturerapu2@gmail.com', 'SecureSoft Sdn Bhd', 'Ms. Priya Nair', 'supervisor2@gmail.com', today()->subWeeks(3)->startOfWeek(), today()->subWeeks(3)->startOfWeek()->addWeeks(15)->addDays(4)],
+            'daniel@gmail.com' => ['lecturerapu3@gmail.com', 'LogicPulse Sdn Bhd', 'Mr. Marcus Wong', 'supervisor3@gmail.com', today()->subWeeks(16)->startOfWeek(), today()->subWeeks(16)->startOfWeek()->addWeeks(15)->addDays(4)],
+            'nadia.presentation@example.test' => ['lecturerapu1@gmail.com', 'InnovateLab Sdn Bhd', 'Master Virey', 'mastervirey@gmail.com', today()->startOfWeek(), today()->startOfWeek()->addWeeks(15)->addDays(4)],
         ];
 
-        foreach ($placements as $studentEmail => [$mentorEmail, $company, $supervisorName, $supervisorEmail]) {
+        foreach ($placements as $studentEmail => [$mentorEmail, $company, $supervisorName, $supervisorEmail, $startDate, $endDate]) {
             $studentKey = strstr($studentEmail, '@', true);
             $documentPaths = [
                 'job_offer_path' => "sus/placements/{$studentKey}-offer.pdf",
@@ -227,8 +288,8 @@ class SusUsabilitySeeder extends Seeder
                     'mentor_id' => $u[$mentorEmail]->id,
                     'supervisor_user_id' => null,
                     'office_address' => 'Kuala Lumpur, Malaysia',
-                    'start_date' => today()->subWeeks(3),
-                    'end_date' => today()->addWeeks(13),
+                    'start_date' => $startDate,
+                    'end_date' => $endDate,
                     'supervisor_name' => $supervisorName,
                     'supervisor_email' => $supervisorEmail,
                     'supervisor_personal_email' => $supervisorEmail,
@@ -269,6 +330,74 @@ class SusUsabilitySeeder extends Seeder
         return $pdf."trailer << /Size 6 /Root 1 0 R >>\nstartxref\n{$xref}\n%%EOF\n";
     }
 
+    private function seedPresentationStages(array $u, InternshipCycle $cycle): void
+    {
+        $adam = $u['adam@gmail.com'];
+        $aisha = $u['aisha@gmail.com'];
+        $daniel = $u['daniel@gmail.com'];
+        $nadia = $u['nadia.presentation@example.test'];
+
+        $adam->update(['supervisor_id' => null]);
+        $this->placementFor($adam, $cycle)->update([
+            'supervisor_user_id' => null,
+            'status' => 'pending',
+            'approved_at' => null,
+            'rejected_at' => null,
+            'rejection_reason' => null,
+        ]);
+
+        $aishaSupervisor = $u['supervisor2@gmail.com'];
+        $aisha->update(['supervisor_id' => $aishaSupervisor->id]);
+        $this->placementFor($aisha, $cycle)->update([
+            'supervisor_user_id' => $aishaSupervisor->id,
+            'status' => 'completed',
+            'approved_at' => now()->subWeeks(3),
+            'rejected_at' => null,
+            'rejection_reason' => null,
+        ]);
+
+        $danielSupervisor = $u['supervisor3@gmail.com'];
+        $daniel->update(['supervisor_id' => $danielSupervisor->id]);
+        $this->placementFor($daniel, $cycle)->update([
+            'supervisor_user_id' => $danielSupervisor->id,
+            'status' => 'completed',
+            'approved_at' => now()->subWeeks(16),
+            'rejected_at' => null,
+            'rejection_reason' => null,
+        ]);
+
+        // This approved placement deliberately remains unlinked so Admin One
+        // can demonstrate "Create supervisor login" and send credentials to
+        // the real presentation inbox. An existing supervisor account may be
+        // safely reused; the provisioning action resets and emails a password.
+        $nadia->update(['supervisor_id' => null]);
+        $this->placementFor($nadia, $cycle)->update([
+            'mentor_id' => $u['lecturerapu1@gmail.com']->id,
+            'supervisor_user_id' => null,
+            'supervisor_name' => 'Master Virey',
+            'supervisor_email' => 'mastervirey@gmail.com',
+            'supervisor_personal_email' => 'mastervirey@gmail.com',
+            'status' => 'approved',
+            'approved_at' => now()->subDay(),
+            'rejected_at' => null,
+            'rejection_reason' => null,
+        ]);
+
+        FinalClearance::whereIn('student_id', [
+            $adam->id,
+            $aisha->id,
+            $daniel->id,
+            $nadia->id,
+        ])->delete();
+    }
+
+    private function placementFor(User $student, InternshipCycle $cycle): PlacementClearance
+    {
+        return PlacementClearance::where('student_id', $student->id)
+            ->where('internship_cycle_id', $cycle->id)
+            ->firstOrFail();
+    }
+
     private function seedEvaluationForm(InternshipCycle $cycle): EvaluationForm
     {
         return EvaluationForm::updateOrCreate(
@@ -283,65 +412,147 @@ class SusUsabilitySeeder extends Seeder
 
     private function seedLogbooks(array $u, InternshipCycle $cycle): void
     {
-        $rows = [
-            'adam@gmail.com' => [
-                1 => ['approved', 'Developed authentication pages and tested login workflow', 'Good progress. Authentication flow was completed clearly.', 40],
-                2 => ['overdue_locked', null, null, 0],
-                3 => ['pending', 'Created student dashboard and company application tracker interface', null, 38],
-                4 => ['open', null, null, 0],
+        $students = collect([
+            $u['adam@gmail.com'],
+            $u['aisha@gmail.com'],
+            $u['daniel@gmail.com'],
+            $u['nadia.presentation@example.test'],
+        ]);
+
+        Logbook::whereIn('user_id', $students->pluck('id'))->delete();
+
+        // Adam deliberately has no weekly records. His placement is still
+        // waiting for Academic Mentor approval, which is what generates them.
+        $this->seedAishaTimeline($u, $cycle);
+        $this->seedDanielTimeline($u, $cycle);
+        $this->seedSupervisorLoginTimeline($u, $cycle);
+    }
+
+    private function seedAishaTimeline(array $u, InternshipCycle $cycle): void
+    {
+        $student = $u['aisha@gmail.com'];
+        $supervisor = $u['supervisor2@gmail.com'];
+        $placement = $this->placementFor($student, $cycle);
+        $firstMonday = $placement->start_date->copy()->startOfWeek(Carbon::MONDAY);
+        $submitted = [
+            1 => [
+                'approved',
+                'Implemented secure authentication and role-based dashboard navigation.',
+                'Built Laravel validation, middleware, feature tests, and PostgreSQL user-role queries.',
+                'Approved. The entry clearly explains the objectives, technical work, attendance, and evidence.',
             ],
-            'aisha@gmail.com' => [
-                1 => ['rejected', 'Prepared API endpoints for application tracker', 'Please provide clearer evidence and include API testing screenshots.', 35],
-                2 => ['approved', 'Updated API validation and fixed database relationship issue', 'Good improvement after correction.', 40],
-                3 => ['overdue_locked', null, null, 0],
-                4 => ['open', null, null, 0],
+            2 => [
+                'rejected',
+                'Prepared REST endpoints for the internship application tracker.',
+                'Created controllers, request validation, Eloquent relationships, and API test cases.',
+                'Please add clearer testing evidence and explain how failed validation cases were handled.',
             ],
-            'daniel@gmail.com' => [
-                1 => ['approved', 'Designed wireframes for logbook and supervisor approval pages', 'Good design work and clear interface flow.', 40],
-                2 => ['pending', 'Implemented logbook submission form and evidence upload placeholder', null, 39],
-                3 => ['approved', 'Implemented supervisor dashboard table and pending approval list', 'Clear progress and dashboard is easy to review.', 40],
-                4 => ['open', null, null, 0],
+            3 => [
+                'pending',
+                'Corrected the application tracker after supervisor feedback.',
+                'Added validation screenshots, improved error handling, and reran the Laravel feature tests.',
+                null,
             ],
         ];
-        $contentByStudentAndWeek = [
-            'adam@gmail.com' => [
-                1 => 'Built Laravel login validation, role-based redirects, and authentication tests using PHP and PostgreSQL.',
-                3 => 'Implemented dashboard cards and company-application CRUD screens using Laravel Blade, Eloquent, HTML, CSS, and JavaScript.',
-            ],
-            'aisha@gmail.com' => [
-                1 => 'Created REST-style routes, controllers, request validation, and API test cases for the application tracker.',
-                2 => 'Improved validation rules and corrected Eloquent relationships between students and company applications.',
-            ],
-            'daniel@gmail.com' => [
-                1 => 'Produced Figma wireframes and mapped the student submission and supervisor approval user journeys.',
-                2 => 'Built the weekly submission form, validation feedback, and evidence-upload handling.',
-                3 => 'Implemented the assigned-intern table, pending-review filters, and role-based dashboard queries.',
-            ],
-        ];
-        $supervisorEmails = ['adam@gmail.com' => 'supervisor1@gmail.com', 'aisha@gmail.com' => 'supervisor2@gmail.com', 'daniel@gmail.com' => 'supervisor3@gmail.com'];
-        foreach ($rows as $email => $weeks) {
-            foreach ($weeks as $week => [$status, $description, $feedback, $hours]) {
-                $due = match ($week) {
-                    1 => now()->subDays(21), 2 => now()->subDays(14), 3 => now()->subDays(7), default => now()->addDays(7)
-                };
-                $reviewed = in_array($status, ['approved', 'rejected'], true);
-                $startDate = $due->copy()->subDays(6);
-                $renderedMinutes = $hours * 60;
-                $formattedDescription = $description
-                    ? "=== Type(s) & Objective(s) ===\n{$description}\n\n=== Content & Skills ===\n".($contentByStudentAndWeek[$email][$week] ?? '')
-                    : null;
-                Logbook::updateOrCreate(['user_id' => $u[$email]->id, 'week_number' => $week], [
-                    'internship_cycle_id' => $cycle->id, 'timeline_generated' => true,
-                    'start_date' => $startDate->toDateString(), 'end_date' => $due->toDateString(),
-                    'submission_due_at' => $due, 'locked_at' => $status === 'overdue_locked' ? $due : null,
-                    'description' => $formattedDescription, 'rendered_minutes' => $renderedMinutes,
-                    'attendance_entries' => $description ? $this->attendanceEntries($startDate, $renderedMinutes) : null,
-                    'status' => $status, 'supervisor_remarks' => $feedback,
-                    'approved_by_id' => $reviewed ? $u[$supervisorEmails[$email]]->id : null,
-                    'approved_at' => $reviewed ? $due->copy()->addDay() : null,
-                    'evidence_file_path' => $description ? 'evidence/'.strstr($email, '@', true)."/week{$week}.pdf" : null,
-                ]);
+
+        foreach (range(1, $cycle->duration_weeks) as $week) {
+            $startDate = $firstMonday->copy()->addWeeks($week - 1);
+            $endDate = $startDate->copy()->addDays(4);
+            $dueAt = $startDate->copy()->addDays(11)->endOfDay();
+            [$status, $objective, $content, $remarks] = $submitted[$week]
+                ?? [$week === 4 ? 'open' : 'scheduled', null, null, null];
+            $description = $objective
+                ? "=== Type(s) & Objective(s) ===\n{$objective}\n\n=== Content & Skills ===\n{$content}"
+                : null;
+            $evidencePath = $description ? "evidence/aisha/week{$week}.pdf" : null;
+
+            if ($evidencePath) {
+                Storage::disk('local')->put(
+                    $evidencePath,
+                    $this->placeholderPdf($student->name, $placement->company_name, "Week {$week} evidence")
+                );
             }
+
+            Logbook::create([
+                'user_id' => $student->id,
+                'internship_cycle_id' => $cycle->id,
+                'week_number' => $week,
+                'timeline_generated' => true,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'submission_due_at' => $dueAt,
+                'description' => $description,
+                'attendance_entries' => $description ? $this->attendanceEntries($startDate, 2400) : null,
+                'rendered_minutes' => $description ? 2400 : 0,
+                'verified_minutes' => $status === 'approved' ? 2340 : null,
+                'attendance_remarks' => $status === 'approved' ? 'Thirty minutes excluded after attendance verification.' : null,
+                'status' => $status,
+                'supervisor_remarks' => $remarks,
+                'rejection_category' => $status === 'rejected' ? 'content' : null,
+                'approved_by_id' => $status === 'approved' ? $supervisor->id : null,
+                'approved_at' => $status === 'approved' ? $dueAt->copy()->addDay() : null,
+                'evidence_file_path' => $evidencePath,
+            ]);
+        }
+    }
+
+    private function seedDanielTimeline(array $u, InternshipCycle $cycle): void
+    {
+        $student = $u['daniel@gmail.com'];
+        $supervisor = $u['supervisor3@gmail.com'];
+        $placement = $this->placementFor($student, $cycle);
+        $firstMonday = $placement->start_date->copy()->startOfWeek(Carbon::MONDAY);
+
+        foreach (range(1, $cycle->duration_weeks) as $week) {
+            $startDate = $firstMonday->copy()->addWeeks($week - 1);
+            $endDate = $startDate->copy()->addDays(4);
+            $evidencePath = "evidence/daniel/week{$week}.pdf";
+            Storage::disk('local')->put(
+                $evidencePath,
+                $this->placeholderPdf($student->name, $placement->company_name, "Week {$week} evidence")
+            );
+
+            Logbook::create([
+                'user_id' => $student->id,
+                'internship_cycle_id' => $cycle->id,
+                'week_number' => $week,
+                'timeline_generated' => true,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'submission_due_at' => $startDate->copy()->addDays(11)->endOfDay(),
+                'description' => "=== Type(s) & Objective(s) ===\nCompleted the assigned internship objectives for Week {$week}.\n\n=== Content & Skills ===\nDocumented development work, testing results, professional communication, and lessons learned for supervisor review.",
+                'attendance_entries' => $this->attendanceEntries($startDate, 2400),
+                'rendered_minutes' => 2400,
+                'verified_minutes' => 2400,
+                'attendance_remarks' => 'Attendance and rendered hours verified against the weekly record.',
+                'status' => 'approved',
+                'supervisor_remarks' => 'Approved. The objectives, activities, evidence, and attendance are complete.',
+                'approved_by_id' => $supervisor->id,
+                'approved_at' => $endDate->copy()->addDay()->setTime(10, 0),
+                'evidence_file_path' => $evidencePath,
+            ]);
+        }
+    }
+
+    private function seedSupervisorLoginTimeline(array $u, InternshipCycle $cycle): void
+    {
+        $student = $u['nadia.presentation@example.test'];
+        $placement = $this->placementFor($student, $cycle);
+        $firstMonday = $placement->start_date->copy()->startOfWeek(Carbon::MONDAY);
+
+        foreach (range(1, $cycle->duration_weeks) as $week) {
+            $startDate = $firstMonday->copy()->addWeeks($week - 1);
+            Logbook::create([
+                'user_id' => $student->id,
+                'internship_cycle_id' => $cycle->id,
+                'week_number' => $week,
+                'timeline_generated' => true,
+                'start_date' => $startDate,
+                'end_date' => $startDate->copy()->addDays(4),
+                'submission_due_at' => $startDate->copy()->addDays(11)->endOfDay(),
+                'rendered_minutes' => 0,
+                'status' => $week === 1 ? 'open' : 'scheduled',
+            ]);
         }
     }
 
@@ -359,27 +570,81 @@ class SusUsabilitySeeder extends Seeder
         ])->all();
     }
 
-    private function seedEvaluations(array $u, InternshipCycle $cycle, EvaluationForm $form): void
+    private function seedEvaluationStages(array $u, InternshipCycle $cycle, EvaluationForm $evaluationForm): void
     {
-        $items = [
-            'adam@gmail.com' => ['supervisor1@gmail.com', [5, 4, 4, 4, 5], 'Adam showed strong commitment and completed assigned tasks responsibly.'],
-            'aisha@gmail.com' => ['supervisor2@gmail.com', [4, 4, 3, 4, 4], 'Aisha demonstrated improvement after feedback and completed tasks with guidance.'],
-            'daniel@gmail.com' => ['supervisor3@gmail.com', [5, 5, 5, 4, 5], 'Daniel performed well and showed good understanding of the system workflow.'],
-        ];
-        $keys = ['attendance', 'communication', 'technical_performance', 'problem_solving', 'professional_attitude'];
-        foreach ($items as $email => [$supervisor, $scores, $comments]) {
-            $ratings = [];
-            foreach ($keys as $i => $key) {
-                $ratings[$key] = ['rating' => match ($scores[$i]) {
-                    5 => 'A', 4 => 'B', 3 => 'C', default => 'D'
-                }, 'comment' => null];
-            }
-            PerformanceEvaluation::updateOrCreate(['student_id' => $u[$email]->id, 'type' => 'final'], [
-                'internship_cycle_id' => $cycle->id, 'evaluation_form_id' => $form->id,
-                'supervisor_id' => $u[$supervisor]->id, 'ratings' => $ratings,
-                'overall_grade' => (int) round(array_sum($scores) / count($scores)),
-                'overall_comments' => $comments, 'status' => 'submitted', 'submitted_at' => now()->subDays(3),
-            ]);
-        }
+        PerformanceEvaluation::whereIn('student_id', [
+            $u['adam@gmail.com']->id,
+            $u['aisha@gmail.com']->id,
+            $u['daniel@gmail.com']->id,
+            $u['nadia.presentation@example.test']->id,
+        ])->delete();
+
+        $criteria = collect($evaluationForm->criteria)->mapWithKeys(
+            fn (string $label, string $key): array => [$key => [
+                'rating' => 'A',
+                'comment' => "Daniel consistently demonstrated strong {$label} throughout the internship.",
+            ]]
+        )->all();
+
+        PerformanceEvaluation::create([
+            'student_id' => $u['daniel@gmail.com']->id,
+            'internship_cycle_id' => $cycle->id,
+            'evaluation_form_id' => $evaluationForm->id,
+            'supervisor_id' => $u['supervisor3@gmail.com']->id,
+            'type' => PerformanceEvaluation::TYPE_FINAL,
+            'ratings' => $criteria,
+            'overall_grade' => 9,
+            'overall_comments' => 'Daniel completed the internship successfully and demonstrated reliable technical, communication, and professional skills.',
+            'status' => PerformanceEvaluation::STATUS_SUBMITTED,
+            'submitted_at' => now()->subDays(2),
+        ]);
+    }
+
+    private function seedDanielFinalClearance(array $u, InternshipCycle $cycle): void
+    {
+        $student = $u['daniel@gmail.com'];
+        $placement = $this->placementFor($student, $cycle);
+        $reportPath = 'sus/final-clearances/daniel-internship-report.pdf';
+        $clearanceFormPath = 'sus/final-clearances/daniel-report-clearance-form.pdf';
+
+        Storage::disk('local')->put(
+            $reportPath,
+            $this->placeholderPdf($student->name, $placement->company_name, 'final internship report')
+        );
+        Storage::disk('local')->put(
+            $clearanceFormPath,
+            $this->placeholderPdf($student->name, $placement->company_name, 'signed report clearance form')
+        );
+
+        $clearance = FinalClearance::updateOrCreate(
+            ['student_id' => $student->id],
+            [
+                'internship_cycle_id' => $cycle->id,
+                'placement_clearance_id' => $placement->id,
+                'mentor_id' => $u['lecturerapu3@gmail.com']->id,
+                'supervisor_id' => $u['supervisor3@gmail.com']->id,
+                'report_path' => $reportPath,
+                'report_original_name' => 'Daniel-Tan-Internship-Report.pdf',
+                'report_clearance_form_path' => $clearanceFormPath,
+                'report_clearance_form_original_name' => 'Daniel-Tan-Report-Clearance-Form.pdf',
+                'status' => FinalClearance::STATUS_PENDING,
+                'mentor_status' => FinalClearance::STATUS_PENDING,
+                'mentor_feedback' => null,
+                'mentor_signed_at' => null,
+                'industrial_hours_completed' => false,
+                'company_property_cleared' => false,
+                'supervisor_status' => FinalClearance::STATUS_PENDING,
+                'supervisor_feedback' => null,
+                'supervisor_signed_at' => null,
+                'completed_at' => null,
+            ]
+        );
+
+        $clearance->events()->delete();
+        $clearance->events()->create([
+            'actor_id' => $student->id,
+            'action' => 'submitted',
+            'actor_role' => 'student',
+        ]);
     }
 }

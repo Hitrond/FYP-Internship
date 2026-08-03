@@ -25,9 +25,8 @@ class StudentClearanceController extends Controller
             ->latest()
             ->first();
 
-        $prefillClearance = ($latestClearance && $latestClearance->status !== 'pending')
-            ? $latestClearance
-            : null;
+        $prefillClearance = $latestClearance;
+
         return view('student.clearance.create', compact(
             'latestClearance',
             'prefillClearance',

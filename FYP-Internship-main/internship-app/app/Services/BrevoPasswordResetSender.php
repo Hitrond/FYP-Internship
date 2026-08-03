@@ -4,11 +4,16 @@ namespace App\Services;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
+use RuntimeException;
 
 class BrevoPasswordResetSender
 {
     public function send(User $user, string $token): void
     {
+        if (blank(config('services.brevo.key'))) {
+            throw new RuntimeException('BREVO_API_KEY is not configured.');
+        }
+
         $resetUrl = route('password.reset', [
             'token' => $token,
             'email' => $user->getEmailForPasswordReset(),
@@ -18,20 +23,23 @@ class BrevoPasswordResetSender
         $safeUrl = e($resetUrl);
         $minutes = (int) config('auth.passwords.users.expire', 60);
 
-        Http::withHeaders([
-            'api-key' => config('services.brevo.key'),
-            'accept' => 'application/json',
-        ])->post('https://api.brevo.com/v3/smtp/email', [
-            'sender' => [
-                'name' => config('mail.from.name'),
-                'email' => config('mail.from.address'),
-            ],
-            'to' => [[
-                'name' => $user->name,
-                'email' => $user->getEmailForPasswordReset(),
-            ]],
-            'subject' => 'Reset your InternTrack password',
-            'htmlContent' => <<<HTML
+        Http::connectTimeout(5)
+            ->timeout(15)
+            ->withHeaders([
+                'api-key' => config('services.brevo.key'),
+                'accept' => 'application/json',
+                'content-type' => 'application/json',
+            ])->post('https://api.brevo.com/v3/smtp/email', [
+                'sender' => [
+                    'name' => config('mail.from.name'),
+                    'email' => config('mail.from.address'),
+                ],
+                'to' => [[
+                    'name' => $user->name,
+                    'email' => $user->getEmailForPasswordReset(),
+                ]],
+                'subject' => 'Reset your InternTrack password',
+                'htmlContent' => <<<HTML
                 <div style="font-family:Arial,sans-serif;line-height:1.6;color:#1e293b;max-width:600px;margin:auto">
                     <h2 style="color:#17233f">Reset your password</h2>
                     <p>Hello {$name},</p>
@@ -41,6 +49,6 @@ class BrevoPasswordResetSender
                     <p>InternTrack</p>
                 </div>
                 HTML,
-        ])->throw();
+            ])->throw();
     }
 }

@@ -43,23 +43,29 @@
         overflow-wrap: anywhere;
     }
 
-    /* Tables keep their useful desktop columns and scroll inside the page on phones. */
+    /* Keep table scrolling inside its card instead of widening the whole page. */
+    main .overflow-x-auto,
+    main .overflow-auto {
+        max-width: 100%;
+        min-width: 0;
+        overscroll-behavior-inline: contain;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x pan-y;
+    }
+
+    /* Tables retain useful columns and can be swiped horizontally in portrait mode. */
     @media (max-width: 767px) {
-        main table {
-            display: block;
-            max-width: 100%;
-            overflow-x: auto;
-            overscroll-behavior-inline: contain;
-            -webkit-overflow-scrolling: touch;
+        main .overflow-x-auto > table,
+        main .overflow-auto > table {
+            display: table;
+            min-width: 48rem;
         }
 
-        main th,
-        main td {
+        main th {
             white-space: nowrap;
         }
 
-        main td p,
-        main td a {
+        main td {
             white-space: normal;
         }
     }

@@ -95,7 +95,7 @@ class StudentDocumentLibraryTest extends TestCase
             'bio' => 'Computing student with practical software development experience.',
         ]);
         $student->education()->create([
-            'institution_name' => 'Example University',
+            'institution_name' => 'Example University & Innovation College',
             'degree' => 'Bachelor',
             'field_of_study' => 'Computing',
             'start_date' => '2023-01-01',
@@ -108,13 +108,14 @@ class StudentDocumentLibraryTest extends TestCase
         $this->actingAs($student)
             ->get(route('student.resume.download', ['template' => 'classic']))
             ->assertOk()
-            ->assertHeader('Content-Type', 'application/pdf');
+            ->assertHeader('Content-Type', 'application/pdf')
+            ->assertDownload(str($student->name)->slug().'-ats-resume.pdf');
 
         $this->actingAs($student)
             ->get(route('student.resume.download-doc', ['template' => 'classic']))
             ->assertOk()
             ->assertHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-            ->assertDownload();
+            ->assertDownload(str($student->name)->slug().'-ats-resume.docx');
 
         CoverLetter::create([
             'user_id' => $student->id,
@@ -144,41 +145,98 @@ class StudentDocumentLibraryTest extends TestCase
         }
     }
 
-    public function test_each_resume_template_generates_valid_pdf_and_editable_docx(): void
+    public function test_three_ats_templates_generate_matching_previews_pdfs_and_editable_docx_files(): void
     {
         Storage::fake('local');
         $student = User::factory()->create(['role' => 'student']);
         $student->profile()->create([
             'full_name' => 'Document Test Student',
+            'course_name' => 'Software Engineering Student',
             'personal_email' => $student->email,
             'contact_number' => '+60 12-345 6789',
             'bio' => 'A complete profile summary for document verification.',
-            'projects_summary' => "Project Alpha\nProject Beta",
+            'linkedin_url' => 'https://linkedin.com/in/document-test',
+            'github_url' => 'https://github.com/document-test',
+            'portfolio_url' => 'https://document-test.example.com',
+            'projects_summary' => "Project Alpha: Built an internship application portal.\nProject Beta: Designed a reporting dashboard.",
+            'languages_summary' => "English (Fluent)\nMalay (Conversational)",
+            'references_summary' => 'Available upon request.',
         ]);
         $student->education()->create([
-            'institution_name' => 'Example University',
+            'institution_name' => 'Example University & Innovation College',
             'degree' => 'Bachelor of Computing',
             'field_of_study' => 'Software Engineering',
             'start_date' => '2023-01-01',
+            'end_date' => '2026-12-31',
+            'description' => 'Final Year Project: Internship Management System.',
         ]);
         $student->skills()->create(['name' => 'Laravel', 'proficiency' => 'Advanced']);
 
-        foreach (['classic', 'traditional', 'prime-ats'] as $template) {
+        $templates = [
+            'classic' => ['label' => 'Classic ATS', 'color' => '111827'],
+            'prime-ats' => ['label' => 'Modern ATS', 'color' => '1D4ED8'],
+            'traditional' => ['label' => 'Two-Column ATS', 'color' => '0F172A'],
+        ];
+        $pdfHashes = [];
+
+        foreach ($templates as $template => $expectation) {
             $this->actingAs($student)
+                ->get(route('student.resume.builder', compact('template')))
+                ->assertOk()
+                ->assertSee($expectation['label'])
+                ->assertSee('data-resume-template="'.$template.'"', false)
+                ->assertSee('data-layout="'.($template === 'traditional' ? 'two-column' : 'single-column').'"', false)
+                ->assertSee('PROFESSIONAL SUMMARY')
+                ->assertSee('Project Alpha: Built an internship application portal.');
+
+            $pdfResponse = $this->actingAs($student)
                 ->get(route('student.resume.download', compact('template')))
                 ->assertOk()
                 ->assertHeader('Content-Type', 'application/pdf')
+                ->assertDownload('document-test-student-ats-resume.pdf')
                 ->assertSee('%PDF-', false);
+            $pdfHashes[] = hash('sha256', $pdfResponse->getContent());
 
-            $docx = $this->actingAs($student)
+            $response = $this->actingAs($student)
                 ->get(route('student.resume.download-doc', compact('template')))
                 ->assertOk()
                 ->assertHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-                ->getContent();
+                ->assertDownload('document-test-student-ats-resume.docx');
+
+            $docx = $response->getContent();
 
             $this->assertStringStartsWith('PK', $docx);
             $this->assertStringContainsString('word/document.xml', $docx);
+
+            $xml = $this->extractDocxXml($docx);
+            $text = $this->extractDocxText($docx);
+            $this->assertStringContainsString($expectation['color'], $xml);
+
+            if ($template === 'traditional') {
+                $this->assertStringContainsString('w:num="2"', $xml);
+                $this->assertStringContainsString('w:type="column"', $xml);
+                $this->assertStringNotContainsString('ATS_COLUMN_BREAK', $xml);
+            } else {
+                $this->assertStringNotContainsString('w:type="column"', $xml);
+            }
+
+            $this->assertStringContainsString('PROFESSIONAL SUMMARY', $text);
+            $this->assertStringContainsString('PROJECTS', $text);
+            $this->assertStringContainsString('EDUCATION', $text);
+            $this->assertStringContainsString('SKILLS', $text);
+            $this->assertStringContainsString('LANGUAGES', $text);
+            $this->assertStringContainsString('REFERENCES', $text);
+            $this->assertStringContainsString('Project Alpha: Built an internship application portal.', $text);
+            $this->assertStringContainsString('Final Year Project: Internship Management System.', $text);
+            $this->assertStringNotContainsString('Led backend architecture', $text);
         }
+
+        $this->assertCount(3, array_unique($pdfHashes));
+
+        $this->actingAs($student)
+            ->get(route('student.resume.builder', ['template' => 'not-a-template']))
+            ->assertOk()
+            ->assertSee('data-resume-template="prime-ats"', false);
     }
 
     public function test_generated_documents_require_a_complete_student_profile(): void
@@ -235,5 +293,31 @@ class StudentDocumentLibraryTest extends TestCase
             'company_name' => 'SUS Test Company',
             'role' => 'Software Engineering Intern',
         ]);
+    }
+
+    private function extractDocxText(string $contents): string
+    {
+        $xml = $this->extractDocxXml($contents);
+        $withParagraphs = preg_replace('/<\/w:p>/', "\n", $xml);
+
+        return trim(html_entity_decode(strip_tags($withParagraphs), ENT_QUOTES | ENT_XML1, 'UTF-8'));
+    }
+
+    private function extractDocxXml(string $contents): string
+    {
+        $path = tempnam(sys_get_temp_dir(), 'ats-resume-test-');
+        file_put_contents($path, $contents);
+
+        $zip = new \ZipArchive;
+        $this->assertTrue($zip->open($path) === true);
+        $xml = $zip->getFromName('word/document.xml');
+        $zip->close();
+        @unlink($path);
+
+        $this->assertIsString($xml);
+        $document = new \DOMDocument;
+        $this->assertTrue($document->loadXML($xml));
+
+        return $xml;
     }
 }

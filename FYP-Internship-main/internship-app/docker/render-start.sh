@@ -13,6 +13,8 @@ php artisan db:seed --class=SusApprovalAssetsSeeder --force
 php artisan config:cache
 php artisan view:cache
 
+php artisan queue:work --sleep=3 --tries=3 --timeout=120 &
+
 exec php \
     -d display_errors=Off \
     -d upload_max_filesize=105M \

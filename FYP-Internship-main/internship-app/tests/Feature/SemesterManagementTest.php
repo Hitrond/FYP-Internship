@@ -96,6 +96,59 @@ class SemesterManagementTest extends TestCase
         $this->assertSame(InternshipCycle::STATUS_DRAFT, $draft->fresh()->status);
     }
 
+    public function test_student_in_an_active_semester_cannot_be_added_to_another_semester_until_removed(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $student = User::factory()->create([
+            'role' => 'student',
+            'name' => 'Active Semester Student',
+        ]);
+        $active = $this->cycle(['status' => InternshipCycle::STATUS_ACTIVE]);
+        $draft = $this->cycle([
+            'name' => 'January 2027 Internship',
+            'intake_code' => 'INT-JAN-2027',
+            'placement_window_start' => '2027-01-04',
+            'placement_window_end' => '2027-02-01',
+        ]);
+        InternshipCycleStudent::create([
+            'internship_cycle_id' => $active->id,
+            'student_id' => $student->id,
+            'assigned_at' => now(),
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.semesters.show', $draft))
+            ->assertOk()
+            ->assertDontSee('<option value="'.$student->id.'">Active Semester Student', false);
+
+        $this->actingAs($admin)
+            ->post(route('admin.semesters.students.store', $draft), [
+                'student_ids' => [$student->id],
+            ])
+            ->assertSessionHasErrors('student_ids');
+
+        $this->assertDatabaseMissing('internship_cycle_students', [
+            'internship_cycle_id' => $draft->id,
+            'student_id' => $student->id,
+        ]);
+
+        $this->actingAs($admin)
+            ->delete(route('admin.semesters.students.destroy', [$active, $student]))
+            ->assertRedirect();
+
+        $this->actingAs($admin)
+            ->post(route('admin.semesters.students.store', $draft), [
+                'student_ids' => [$student->id],
+            ])
+            ->assertRedirect()
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('internship_cycle_students', [
+            'internship_cycle_id' => $draft->id,
+            'student_id' => $student->id,
+        ]);
+    }
+
     public function test_admin_can_edit_an_active_semester_without_changing_its_status(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
@@ -201,14 +254,12 @@ class SemesterManagementTest extends TestCase
             ->assertRedirect();
 
         $this->assertSame(16, $student->logbooks()->count());
-        $this->assertDatabaseHas('logbooks', [
-            'user_id' => $student->id,
-            'week_number' => 1,
-            'start_date' => '2026-07-06',
-            'end_date' => '2026-07-10',
-            'submission_due_at' => '2026-07-17 23:59:59',
-            'timeline_generated' => true,
-        ]);
+        $firstWeek = $student->logbooks()->where('week_number', 1)->firstOrFail();
+
+        $this->assertSame('2026-07-06', $firstWeek->start_date->toDateString());
+        $this->assertSame('2026-07-10', $firstWeek->end_date->toDateString());
+        $this->assertSame('2026-07-17 23:59:59', $firstWeek->submission_due_at->format('Y-m-d H:i:s'));
+        $this->assertTrue($firstWeek->timeline_generated);
     }
 
     public function test_admin_progress_report_is_isolated_by_semester(): void

@@ -118,7 +118,7 @@ class RemainingPreparedTestCasesTest extends TestCase
 
         $this->actingAs($student)->post(route('student.resume.upload'), [
             'title' => 'Too Large',
-            'document' => UploadedFile::fake()->create('resume.pdf', 10241, 'application/pdf'),
+            'document' => UploadedFile::fake()->create('resume.pdf', 102401, 'application/pdf'),
         ])->assertSessionHasErrors('document');
 
         $this->assertDatabaseCount('student_documents', 0);
@@ -184,7 +184,7 @@ class RemainingPreparedTestCasesTest extends TestCase
         $this->actingAs($student)->post(route('student.companies.store'), [
             'company_name' => 'Oversized File Company',
             'status' => 'Offered',
-            'offer_letter' => UploadedFile::fake()->create('offer.pdf', 10241, 'application/pdf'),
+            'offer_letter' => UploadedFile::fake()->create('offer.pdf', 102401, 'application/pdf'),
         ])->assertSessionHasErrors('offer_letter');
 
         $this->assertDatabaseCount('applications', 0);

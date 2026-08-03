@@ -1,4 +1,14 @@
-import axios from 'axios';
-window.axios = axios;
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
 
-window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+const pusherKey = document.querySelector('meta[name="pusher-app-key"]')?.content;
+
+if (pusherKey) {
+    window.Pusher = Pusher;
+    window.Echo = new Echo({
+        broadcaster: 'pusher',
+        key: pusherKey,
+        cluster: document.querySelector('meta[name="pusher-app-cluster"]')?.content || 'mt1',
+        forceTLS: true,
+    });
+}
